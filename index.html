@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>VPD — Portal Oficial</title>
+  <link rel="icon" type="image/png" href="images/logo.png">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -20,7 +22,16 @@
     
     /* Layout Header Sidebar */
     .brand{display:flex; gap:12px; align-items:center; margin-bottom: 5px; position: relative;}
-    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.4); flex-shrink:0; cursor: pointer;}
+    
+    /* LOGO CSS MODIFICAT - Fara fundal colorat, doar imagine */
+    .logo{
+        width:55px; height:55px; 
+        display:flex; align-items:center; justify-content:center; 
+        flex-shrink:0; cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .logo:hover { transform: scale(1.05); }
+    .logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
     
     .brand-text-area { flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .brand-title-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
@@ -28,7 +39,7 @@
     /* Butonul de Meniu (Hamburger) */
     .menu-toggle { 
         background: rgba(255,255,255,0.05); border: 1px solid var(--outline);
-        color: #fff; /* Culoare alba, curata */
+        color: #fff;
         width: 32px; height: 32px; border-radius: 6px;
         display: flex; align-items: center; justify-content: center; 
         cursor: pointer; transition: all .2s ease; padding: 0;
@@ -37,16 +48,10 @@
     
     /* Dropdown "Alive" */
     .dropdown-menu { 
-        display: none; 
-        flex-direction: column; 
-        gap: 6px; 
-        background: rgba(16, 24, 39, 0.95); /* Aproape opac pentru citire */
-        backdrop-filter: blur(10px); /* Efect de sticla */
-        padding: 12px; 
-        border-radius: 12px; 
-        border: 1px solid var(--outline); 
-        margin-bottom: 15px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: none; flex-direction: column; gap: 6px; 
+        background: rgba(16, 24, 39, 0.95); backdrop-filter: blur(10px);
+        padding: 12px; border-radius: 12px; border: 1px solid var(--outline); 
+        margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .dropdown-menu.show { display: flex; }
@@ -92,7 +97,9 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="logo" onclick="loadHome()">VPD</div>
+        <div class="logo" onclick="loadHome()">
+            <img src="images/logo.png" alt="VPD Logo">
+        </div>
         
         <div class="brand-text-area">
           <div class="brand-title-row">
@@ -111,15 +118,9 @@
             <span>🏠</span> Acasă
         </button>
         <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
-        <button class="drop-item" onclick="loadResource('Uniforme')">
-            <span>👕</span> Uniforme
-        </button>
-        <button class="drop-item" onclick="loadResource('Arme')">
-            <span>🔫</span> Arme
-        </button>
-        <button class="drop-item" onclick="loadResource('Masini')">
-            <span>🚓</span> Mașini
-        </button>
+        <button class="drop-item" onclick="loadResource('Uniforme')"><span>👕</span> Uniforme</button>
+        <button class="drop-item" onclick="loadResource('Arme')"><span>🔫</span> Arme</button>
+        <button class="drop-item" onclick="loadResource('Masini')"><span>🚓</span> Mașini</button>
       </div>
 
       <nav class="cats">
@@ -155,7 +156,6 @@
     async function loadHTML(filename) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       try {
-        // Adaugam timestamp pentru a evita cache-ul (poate ajuta la poze)
         const response = await fetch('pages/' + filename + '.html?v=' + new Date().getTime());
         if (!response.ok) throw new Error("Nu s-a găsit fișierul: " + filename);
         contentArea.innerHTML = await response.text();
@@ -166,33 +166,27 @@
 
     function loadHome() {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        
         sidebarTitle.innerText = "Vision Police"; 
         pageTitle.innerText = "Vision Police Departament";
         dropdownMenu.classList.remove('show');
-        
         loadHTML('home_vpd');
     }
 
     function loadChapter(capKey, btnElement) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       if(btnElement) btnElement.classList.add('active');
-      
       sidebarTitle.innerText = "Cod Penal";
       pageTitle.textContent = btnElement ? btnElement.innerText : "Cod Penal";
       dropdownMenu.classList.remove('show');
-      
       loadHTML(capKey);
     }
 
     function loadResource(type) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      
       sidebarTitle.innerText = type; 
       currentCategory = type.toLowerCase(); 
       pageTitle.textContent = "Gestiune: " + type;
       dropdownMenu.classList.remove('show');
-      
       loadHTML('selectie_grade'); 
     }
 
