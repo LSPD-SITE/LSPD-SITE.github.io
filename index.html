@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LSPD — Portal Modular</title>
+  <title>VPD — Portal Oficial</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     /* Sidebar */
     .sidebar{background:linear-gradient(180deg,var(--navy-2),var(--navy)); padding:18px; display:flex; flex-direction:column; gap:12px; border-right:1px solid var(--outline); overflow-y:auto; position: relative;}
     .brand{display:flex; gap:12px; align-items:center; margin-bottom: 10px;}
-    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.4); flex-shrink:0;}
+    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.4); flex-shrink:0; cursor: pointer;}
     
     .menu-toggle { margin-left: auto; background: rgba(255,255,255,0.05); border: 1px solid var(--outline); color: var(--highlight); width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: .2s; }
     .menu-toggle:hover { background: rgba(59, 130, 246, 0.2); }
@@ -27,6 +27,10 @@
     .dropdown-menu.show { display: flex; }
     .drop-item { background: transparent; border: none; color: #cbd5e1; text-align: left; padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; transition: .2s; }
     .drop-item:hover { background: var(--highlight); color: white; }
+
+    /* Buton Home */
+    .home-btn { background: rgba(59, 130, 246, 0.1); color: var(--highlight); border: 1px solid var(--outline); padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+    .home-btn:hover { background: var(--highlight); color: white; }
 
     nav.cats ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
     button.cat-btn{appearance:none;border:0;background:transparent;color:inherit;text-align:left;padding:12px 14px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .18s; width:100%}
@@ -58,10 +62,15 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="logo">LSPD</div>
-        <div><h1 style="font-size:16px; margin:0;">Cod Penal</h1><p style="font-size:12px; margin:0; color:var(--muted)">Portal Oficial</p></div>
+        <div class="logo" onclick="loadHome()">VPD</div>
+        <div>
+          <h1 id="sidebarTitle" style="font-size:16px; margin:0;">Vision Police</h1>
+          <p style="font-size:12px; margin:0; color:var(--muted)">Portal Oficial</p>
+        </div>
         <button class="menu-toggle" id="menuToggle">☰</button>
       </div>
+
+      <button class="home-btn" onclick="loadHome()">🏠 ACASĂ</button>
 
       <div class="dropdown-menu" id="dropdownMenu">
         <button class="drop-item" onclick="loadResource('Uniforme')">👕 Uniforme</button>
@@ -71,7 +80,7 @@
 
       <nav class="cats">
         <ul>
-          <li><button class="cat-btn active" onclick="loadChapter('cap1', this)">CAP. 1. Persoane</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap1', this)">CAP. 1. Persoane</button></li>
           <li><button class="cat-btn" onclick="loadChapter('cap2', this)">CAP. 2. Proprietăți</button></li>
           <li><button class="cat-btn" onclick="loadChapter('cap3', this)">CAP. 3. Bune Moravuri</button></li>
           <li><button class="cat-btn" onclick="loadChapter('cap4', this)">CAP. 4. Justiție</button></li>
@@ -82,20 +91,20 @@
           <li><button class="cat-btn" onclick="loadChapter('cap9', this)">CAP. 9. Arme Mortale</button></li>
         </ul>
       </nav>
-      <div style="margin-top:auto; font-size:11px; color:var(--muted); text-align:center;">© 2025 LSPD System</div>
+      <div style="margin-top:auto; font-size:11px; color:var(--muted); text-align:center;">© 2026 VPD System</div>
     </aside>
 
     <main class="main">
-      <div class="header"><h2 id="pageTitle">LSPD</h2></div>
+      <div class="header"><h2 id="pageTitle">Bun venit</h2></div>
       <div id="contentArea"></div>
     </main>
   </div>
 
-<script>
+  <script>
     const contentArea = document.getElementById('contentArea');
     const pageTitle = document.getElementById('pageTitle');
+    const sidebarTitle = document.getElementById('sidebarTitle');
     
-    // Variabila care tine minte ce am selectat din meniu (Uniforme/Arme/Masini)
     let currentCategory = ''; 
 
     async function loadHTML(filename) {
@@ -105,35 +114,47 @@
         if (!response.ok) throw new Error("Nu s-a găsit fișierul: " + filename);
         contentArea.innerHTML = await response.text();
       } catch (error) {
-        contentArea.innerHTML = `<div class="crime" style="border-color:red"><h3>Eroare</h3><p>Nu pot încărca fisierul: <b>pages/${filename}.html</b>.<br>Verifică dacă l-ai creat și ai scris numele corect.</p></div>`;
+        contentArea.innerHTML = `<div class="crime" style="border-color:red"><h3>Eroare</h3><p>Nu pot încărca fisierul: <b>pages/${filename}.html</b>.<br>Verifică dacă l-ai creat în folderul pages.</p></div>`;
       }
+    }
+
+    // Functie pentru pagina de HOME
+    function loadHome() {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        
+        // Schimbam titlurile
+        sidebarTitle.innerText = "Vision Police"; 
+        pageTitle.innerText = "Vision Police Departament";
+        
+        loadHTML('home_vpd');
     }
 
     // Incarca capitolele (Cod Penal)
     function loadChapter(capKey, btnElement) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       if(btnElement) btnElement.classList.add('active');
+      
+      // Aici schimbam titlul din sidebar in COD PENAL cand esti pe un capitol
+      sidebarTitle.innerText = "Cod Penal";
       pageTitle.textContent = btnElement ? btnElement.innerText : "Cod Penal";
+      
       loadHTML(capKey);
     }
 
-    // Pasul 1: Cand apesi pe meniu (ex: Uniforme)
+    // Meniu Resurse
     function loadResource(type) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       
-      currentCategory = type.toLowerCase(); // Salvam categoria (uniforme, arme, masini)
+      // Aici schimbam titlul din sidebar in RESURSE
+      sidebarTitle.innerText = "Resurse VPD";
+      currentCategory = type.toLowerCase(); 
       pageTitle.textContent = "Gestiune: " + type;
       
-      loadHTML('selectie_grade'); // Incarcam meniul cu butoanele de grade
+      loadHTML('selectie_grade'); 
     }
 
-    // Pasul 2: Cand apesi pe un Grad (Cadet, Agent etc)
     function openRankPage(rank) {
-      // Construim numele fisierului automat based pe ce am ales anterior
-      // Ex: "uniforme_cadet", "arme_inspector", "masini_agent"
       const fileName = `${currentCategory}_${rank}`;
-      
-      // Incarcam fisierul respectiv
       loadHTML(fileName);
     }
 
@@ -141,8 +162,8 @@
       document.getElementById('dropdownMenu').classList.toggle('show');
     });
 
-    // Pornire default
-    loadChapter('cap1', document.querySelector('.cat-btn'));
+    // Pornire default pe HOME
+    loadHome();
   </script>
 </body>
 </html>
