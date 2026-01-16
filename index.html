@@ -3,654 +3,146 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cod Penal — Categorii</title>
+  <title>LSPD — Portal Modular</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --navy:#0a2240;
-      --navy-2:#0c2f5c;
-      --bg:#071632; /* very dark navy background */
-      --panel:#111827; /* dark panel */
-      --muted:#9ca3af;
-      --highlight:#3b82f6; /* accent */
-      --outline: rgba(255,255,255,0.06);
-    }
+    :root{ --navy:#0a2240; --navy-2:#0c2f5c; --bg:#071632; --panel:#111827; --muted:#9ca3af; --highlight:#3b82f6; --outline: rgba(255,255,255,0.06); }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:var(--bg); color:#f8fafc; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      min-height:100vh; display:flex; align-items:stretch; justify-content:center;
-    }
-
-    /* Layout - MODIFICAT PENTRU FULLSCREEN */
-    .app{width:100%; height:100vh; display:grid; grid-template-columns: 320px 1fr; gap:0;}
+    body{ margin:0; font-family:Inter, sans-serif; background:var(--bg); color:#f8fafc; min-height:100vh; display:flex; justify-content:center; }
+    
+    .app{width:100%; height:100vh; display:grid; grid-template-columns: 320px 1fr;}
 
     /* Sidebar */
-    .sidebar{background:linear-gradient(180deg,var(--navy-2),var(--navy)); padding:18px; display:flex; flex-direction:column; gap:12px; box-shadow:0 8px 30px rgba(2,6,23,0.6); position:relative;}
-    .sidebar::after{ content:''; position:absolute; top:0; right:-1px; bottom:0; width:1px; background:var(--outline); }
+    .sidebar{background:linear-gradient(180deg,var(--navy-2),var(--navy)); padding:18px; display:flex; flex-direction:column; gap:12px; border-right:1px solid var(--outline); overflow-y:auto; position: relative;}
+    .brand{display:flex; gap:12px; align-items:center; margin-bottom: 10px;}
+    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.4); flex-shrink:0;}
+    
+    .menu-toggle { margin-left: auto; background: rgba(255,255,255,0.05); border: 1px solid var(--outline); color: var(--highlight); width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: .2s; }
+    .menu-toggle:hover { background: rgba(59, 130, 246, 0.2); }
+    
+    .dropdown-menu { display: none; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid var(--outline); margin-bottom: 10px; }
+    .dropdown-menu.show { display: flex; }
+    .drop-item { background: transparent; border: none; color: #cbd5e1; text-align: left; padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; transition: .2s; }
+    .drop-item:hover { background: var(--highlight); color: white; }
 
-    .brand{display:flex; gap:12px; align-items:center}
-    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    .brand h1{margin:0;font-size:16px}
-    .brand p{margin:0;font-size:12px;color:var(--muted)}
-
-    nav.cats{overflow:auto;padding-right:6px;margin-top:6px}
     nav.cats ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
     button.cat-btn{appearance:none;border:0;background:transparent;color:inherit;text-align:left;padding:12px 14px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .18s; width:100%}
-    button.cat-btn:hover{transform:translateY(-3px); background:rgba(255,255,255,0.03)}
-    button.cat-btn.active{background:linear-gradient(90deg,#082146,#0b3560); box-shadow:0 10px 30px rgba(2,6,23,0.6); color:#fff}
+    button.cat-btn:hover{background:rgba(255,255,255,0.03)}
+    button.cat-btn.active{background:linear-gradient(90deg,#082146,#0b3560); box-shadow:0 4px 12px rgba(0,0,0,0.3); color:#fff; border-left: 3px solid var(--highlight);}
 
-    /* Main area */
-    .main{background:var(--panel); padding:22px; box-shadow:0 10px 40px rgba(2,6,23,0.6); overflow:auto}
-    .header{display:flex;align-items:center;justify-content:space-between}
-    .header h2{margin:0}
+    .main{background:var(--panel); padding:30px; overflow-y:auto; position: relative;}
+    .header{ margin-bottom: 25px; border-bottom: 1px solid var(--outline); padding-bottom: 15px; }
+    .header h2{margin:0; font-size: 24px;}
 
-    /* Section blocks */
-    .section{display:none; animation:fadeIn .28s ease both}
-    .section.active{display:block}
-    @keyframes fadeIn{ from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:translateX(0)} }
+    /* Content Styling */
+    .crime{margin-bottom:18px; padding:16px; border-radius:8px; background:linear-gradient(180deg,#0f1724,#0b1220); border:1px solid rgba(255,255,255,0.02); animation: fadeIn 0.3s ease; }
+    .crime h3{margin:0 0 6px 0; color:#fff;}
+    .crime p.desc{margin:0 0 8px 0; color:#cbd5e1; font-size:14px; line-height:1.5;}
+    .crime p.penalty{margin:0; color:var(--highlight); font-weight:700; font-size: 13px;}
+    .chapter-note { color: var(--muted); font-style: italic; margin-bottom: 20px; padding: 12px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--highlight); }
 
-    .crime{margin:18px 0;padding:14px;border-radius:8px;background:linear-gradient(180deg,#0f1724,#0b1220);border:1px solid rgba(255,255,255,0.02)}
-    .crime h3{margin:0 0 6px 0;font-size:16px;color:#fff}
-    .crime p.desc{margin:0 0 8px 0;color:#cbd5e1;font-size:14px;line-height:1.45}
-    .crime p.penalty{margin:0;color:var(--highlight);font-weight:700}
-    .chapter-note { color: var(--muted); font-style: italic; margin-bottom: 16px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--highlight); border-radius: 4px; }
+    /* Ranks Styling */
+    .rank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+    .rank-btn { background: #1f2937; border: 1px solid var(--outline); color: white; padding: 25px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: .2s; }
+    .rank-btn span { font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    .rank-btn:hover { transform: translateY(-5px); background: #1e3a8a; border-color: var(--highlight); }
 
-    /* responsive */
-    @media (max-width:900px){
-      .app{grid-template-columns:1fr; height:auto}
-      .sidebar{order:2; height:auto; display:flex; flex-direction:row; overflow:auto}
-      .sidebar::after{display:none}
-      nav.cats ul{flex-direction:row}
-      button.cat-btn{white-space:nowrap;padding:10px}
-      .main{order:1}
-    }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
+    @media (max-width:900px){ .app{grid-template-columns:1fr;} .sidebar{height:auto; max-height: 40vh;} nav.cats ul{flex-direction:row; overflow-x:auto; padding-bottom:10px;} button.cat-btn{white-space:nowrap;} }
   </style>
 </head>
 <body>
-  <div class="app" role="application">
-    <aside class="sidebar" aria-label="Meniu categorii">
+  <div class="app">
+    <aside class="sidebar">
       <div class="brand">
         <div class="logo">LSPD</div>
-        <div>
-          <h1>Cod Penal</h1>
-          <p>Apasă pe categoria necesară</p>
-        </div>
+        <div><h1 style="font-size:16px; margin:0;">Cod Penal</h1><p style="font-size:12px; margin:0; color:var(--muted)">Portal Oficial</p></div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
       </div>
 
-      <nav class="cats" aria-label="Categorii principale">
+      <div class="dropdown-menu" id="dropdownMenu">
+        <button class="drop-item" onclick="loadResource('Uniforme')">👕 Uniforme</button>
+        <button class="drop-item" onclick="loadResource('Arme')">🔫 Arme</button>
+        <button class="drop-item" onclick="loadResource('Masini')">🚓 Mașini</button>
+      </div>
+
+      <nav class="cats">
         <ul>
-          <li><button class="cat-btn active" data-key="cap1">CAP. 1. Infracţiuni asupra persoanelor</button></li>
-          <li><button class="cat-btn" data-key="cap2">CAP. 2. Infracţiuni asupra proprietăţilor</button></li>
-          <li><button class="cat-btn" data-key="cap3">CAP. 3. Infracţiuni asupra bunelor moravuri</button></li>
-          <li><button class="cat-btn" data-key="cap4">CAP. 4. Infracţiuni asupra justiţiei</button></li>
-          <li><button class="cat-btn" data-key="cap5">CAP. 5. Infracţiuni asupra liniştii publice</button></li>
-          <li><button class="cat-btn" data-key="cap6">CAP. 6. Infracţiuni asupra sănătăţii şi siguranţei publice</button></li>
-          <li><button class="cat-btn" data-key="cap7">CAP. 7. Infracţiuni în trafic</button></li>
-          <li><button class="cat-btn" data-key="cap8">CAP. 8. Legislaţia rutieră</button></li>
-          <li><button class="cat-btn" data-key="cap9">CAP. 9. Controlul armelor mortale</button></li>
+          <li><button class="cat-btn active" onclick="loadChapter('cap1', this)">CAP. 1. Persoane</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap2', this)">CAP. 2. Proprietăți</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap3', this)">CAP. 3. Bune Moravuri</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap4', this)">CAP. 4. Justiție</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap5', this)">CAP. 5. Liniște Publică</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap6', this)">CAP. 6. Siguranță Publică</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap7', this)">CAP. 7. Trafic</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap8', this)">CAP. 8. Legislație Rutieră</button></li>
+          <li><button class="cat-btn" onclick="loadChapter('cap9', this)">CAP. 9. Arme Mortale</button></li>
         </ul>
       </nav>
-
-      <div style="margin-top:auto;font-size:12px;color:var(--muted)">© 2025 LSPD All Rights Reserved.</div>
+      <div style="margin-top:auto; font-size:11px; color:var(--muted); text-align:center;">© 2025 LSPD System</div>
     </aside>
 
-    <main class="main" id="main">
-      <div class="header"><h2 id="sectionTitle">CAP. 1. Infracţiuni asupra persoanelor</h2></div>
-
-      <section class="section active" id="cap1">
-        <div class="crime">
-          <h3>(1)01. Asalt</h3>
-          <p class="desc">Asaltul reprezintă o persoană cu intenţia şi capacitatea de a comite o infracţiune, cum ar fi ameninţarea de a comite o crimă, fiind tototadă capabil de a face acest lucru.<br>● Codul Penal (1)01 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 20 minute — AMENDA: $15.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)02. Asalt cu o armă mortală</h3>
-          <p class="desc">Asaltul cu o armă mortală este un act de asalt în care suspectul este în posesia unui obiect sau a unei arme capabile de a răni.<br>● Codul Penal (1)02 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 30 minute — AMENDA: $20.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)03. Tentativă de omor</h3>
-          <p class="desc">Orice persoană care încearcă să comită o crimă sau vătămări severe şi ireversibile.<br>● Codul Penal (1)03 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 35 minute — AMENDA: $25.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)04. Ameninţări criminale</h3>
-          <p class="desc">Ameninţarea criminală reprezintă orice persoană care ameniţă intenţionat să comită o crimă care poate rezulta în uciderea sau vătămarea corporală gravă a altei persoane în scris, verbal sau prin orice mijloc de comunicare electronic, în timp ce contactul fizic nu este prezent.<br>● Codul Penal (1)04 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 15 minute — AMENDA: $8.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)05. Omor din culpă</h3>
-          <p class="desc">Omorul din culpă reprezintă uciderea fără intenţie a unui individ, cu sau fără o ceartă anterioară.<br>● Codul Penal (1)05 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 40 minute — AMENDA: $35.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)06. Răpire</h3>
-          <p class="desc">O presoană care fură, ţine, reţine sau arestează alt individ, cu forţa şi împotriva voinţei sale.<br>● Codul Penal (1)06 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 25 minute — AMENDA: $2.500.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)07. Crimă (Omucidere)</h3>
-          <p class="desc">Crima este un delict ilegal de ucidere a unei fiinţe umane.<br>● Codul Penal (1)07 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 40 minute — AMENDA: $17.500.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)08. Vătămare corporală gravă</h3>
-          <p class="desc">Orice persoană care răneşte altă persoană prin utilizarea unei armei mortale sau vătămare corporală unde apar răni severe.<br>● Codul Penal (1)08 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 30 minute — AMENDA: $3.500.000</p>
-        </div>
-        <div class="crime">
-          <h3>(1)09. Tortură</h3>
-          <p class="desc">Orice persoană care, cu intenţia de a cauza dureri nemiloase şi suferinţe extreme cu scopul răzbunării, şantajului, convingerii sau pentru orice alt scop sadic, care are ca urmare o vătămare corporală extrem de gravă.<br>● (1)09 nu se va suprapune cu (1)03 Tentativă de omor. Totuşi, dacă tortura a rezultat în moartea unui individ, poate fi suprapus cu (1)07 Crimă.<br>● Codul Penal (1)09 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 25 minute — AMENDA: $20.000.000</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap2">
-        <div class="crime">
-          <h3>(2)01. Şantaj</h3>
-          <p class="desc">Şantajul reprezintă folosirea fricii sau a altor metode drept mecanism pentru a influenţa un individ să îndeplinească diferite activităţi sau servicii.<br>● Codul Penal (2)01 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $4.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)02. Furt auto</h3>
-          <p class="desc">Orice persoană care fură un autovehicul, nu contează valoarea acestuia. Această acuzare include spargerea unui autovehicul, cu sau fără intenţia de a-l fura.<br>● Codul Penal (2)02 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $2.500.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)03. Furt auto Politie/Spital</h3>
-          <p class="desc">Orice persoană care fură un autovehicul care apartine Departamentului de Politie sau al Spitalului. Această acuzare include spargerea unui autovehicul, cu sau fără intenţia de a-l fura.<br>● Codul Penal (2)03 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 60 minute — AMENDA: $30.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)04. Furt</h3>
-          <p class="desc">Furtul constă în fapta unei persoane de a lua un bun mobil din posesia ori detenţia altei persoane, fară consimţământul acesteia, în scopul de a şi-l însuşi pe nedrept. <br>● Codul Penal (2)04 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $2.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)05. Jaf</h3>
-          <p class="desc">Jaful reprezintă furtul unor bunuri personale care se află în posesia altor persoane, în prezenţa acestora şi împotriva absenţei acestora, realizat prin orice mijloace în care forţa sau frica predominau, cum ar fi asaltul sau vătămarea corporală.<br>● Codul Penal (2)05 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 30 minute — AMENDA: $15.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)06. Jaf armat</h3>
-          <p class="desc">Obţinerea unui bun din posesia unei persoane prin folosirea forţei sau impunerea fricii cu ajutorul unei arme de orice model.<br>● Codul Penal (2)06 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 60 minute — AMENDA: $15.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)07. Vandalism</h3>
-          <p class="desc">Orice persoană care distruge sau deteriorează un bun sau o proprietate care nu îi aparţine.<br>● Codul Penal (2)07 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)08. Jaf Banca / Bijuterie</h3>
-          <p class="desc">Tentativa de a sparge o Banca / Bijuterie cu sau fara o Arma Mortala / Alba.<br>● Codul Penal (2)08 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 60 minute — AMENDA: $50.000.000</p>
-          <p class="desc">● ATENTIE: Daca suspectul a savarsit aceasta fapta nu trebuie sa se adauga alte fapte in plus la sentinta!</p>
-        </div>
-        <div class="crime">
-          <h3>(2)09. Esecul de a parasii o institutie a statului</h3>
-          <p class="desc">Orice persoană care refuza sa paraseasca o institutie a statului (Sectia de Politie / Spital / Penitenciar etc) la cererea organului de politie.<br>● Codul Penal (2)09 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $2.500.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)10. Furtul de carduri bancare</h3>
-          <p class="desc">Orice persoană care fura sau detine carduri bancare obtinute prin diferite mijloace.<br>● Codul Penal (2)10 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 - 45 minute — AMENDA: $5.000.000 - $10.000.000</p>
-          <p class="desc">● INFORMATII: In cazul in care este surprins ca produce / detine acest tip de obiecte ilegale, componentele necesare pentru producerea obiectelor o sa fie confiscate. ( Hard / Stick / Adaptor )<br>TIP I: 5 - 15 carduri » 10 minute + $5.000.000<br>TIP II: 16-30 carduri » 15 minute + $6.000.000<br>TIP III: 31-50 carduri » 20 minute + $7.000.000<br>TIP IV: 51-100 carduri » 30 minute + $8.000.000<br>TIP V: 101+ carduri » 45 de minute + $10.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)11. Bani nemarcati [Dirty Money]</h3>
-          <p class="desc">Orice persoană detine bani nemarcati ( Dirty Money ) obtinuti prin diferite mijloace.<br>● Codul Penal (2)11 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 - 45 minute — AMENDA: $5.000.000 - $10.000.000</p>
-          <p class="desc">TIP I: 500$ - 10.000$ bani nemarcati » 10 minute + $5.000.000<br>TIP II: 10.001$ - 30.000$ bani nemarcati  » 15 minute + $6.000.000<br>TIP III: 30.001$ - 80.000$ bani nemarcati  » 20 minute + $7.000.000<br>TIP IV: 80.001$ - 150.000$ bani nemarcati  » 30 minute + $8.000.000<br>TIP V: 150.001$+ bani nemarcati  » 45 de minute + $10.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(2)12. Incalcarea propietatii private.</h3>
-          <p class="desc">Patrunderea fara drept, în orice mod, într-o locuinta, încapere sau loc privat, fara consimtamântul persoanei care o detine, sau refuzul de a le parasi la cererea acesteia.<br>● Codul Penal (2)12 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $5.000.000</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap3">
-        <div class="crime">
-          <h3>(3)01. Expunere indecentă</h3>
-          <p class="desc">Orice persoană care îşi expune organele genitale, cu bună ştiinţă, în public sau în orice spaţiu unde se află şi alte persoane.<br>● Codul Penal (3)01 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 5 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)02. Prostituţie</h3>
-          <p class="desc">Prostituţia constă în fapta unei persoane de a-şi procura principalele mijloace de existenţă practicând în acest scop raporturi sexuale cu diferite persoane. Se aplică și la clienții acestor persoane, care fac uz de prostituție.<br>● Codul Penal (3)02 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)03. Viol</h3>
-          <p class="desc">Violul constă în actul sexual, de orice natură, cu o persoană de sex diferit sau de acelaşi sex, prin constrângerea acesteia, sau profitând de imposibilitatea ei de a se apăra ori de a-şi exprima voinţa.<br>● Codul Penal (3)03 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 60 minute — AMENDA: $45.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)04. Urmăriea unei persoane fără aprobare/împuternicire</h3>
-          <p class="desc">Orice persoană care urmăreşte, cu bună ştiinţă o altă persoană şi o hărţuieşte cu intenţia de a face persoana respectivă să-i fie frică pentru propria siguranţă sau pentru siguranţa familiei sale.<br>● Codul Penal (3)04 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 5 minute — AMENDA: $1.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)05. Acoperirea fetei</h3>
-          <p class="desc">Orice persoană care incearca sa isi acopere zona faciala cu ori ce fel de obiect ( Masca / Bandana / Esarfa etc ) in spatiile publice o sa fie sancionat conform codului penal cu amenda si perchezitie obligatorie deoarece se considera ca acea persoana poate fii periculoasa si poate pune in pericol siguranta cetatenilor.<br>● Codul Penal (3)05 reprezintă o infracţiune care se poate pedepsi cu amendarea suspectului.</p>
-          <p class="penalty">AMENDA: $30.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)06. Jocuri de Noroc</h3>
-          <p class="desc">Orice persoana care desfasoara activitati de tip joc de noroc pe spatii publice contra unei sume de bani sau bunuri materiale. <br>Este permisa desfasurarea jocurilor de noroc in Cazino si in locuintele personale.<br>● Codul Penal (3)06 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 10 minute — AMENDA: $100.000.000</p>
-        </div>
-        <div class="crime">
-          <h3>(3)07. Urmăriea unei autospeciale de politie/medici fără aprobare/împuternicire</h3>
-          <p class="desc">Orice persoană care urmăreşte, cu bună ştiinţă, o unitate de politie/medici şi o hărţuieşte cu intenţia de a face persoana respectivă să-i fie frică pentru propria siguranţă.<br>● Codul Penal (3)07 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-          <p class="penalty">SENTINTA: 60 minute — AMENDA: $150.000.000</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap4">
-        <div class="crime">
-            <h3>(4)01. Dare/Luare de mită</h3>
-            <p class="desc">Orice persoană care oferă bunuri personale pentru a schimba decizia unui angajat guvernamental sau pentru a influența respectivul angajat pentru acțiunile sale.<br>● Codul Penal (4)01 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 20 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)02. Sfidarea Curţii</h3>
-            <p class="desc">Orice persoană care nu se va supune ordinelor verbale în Curtea de Justiție.<br>● Codul Penal (4)02 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 60 minute — AMENDA: $500.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)03. Descurajarea unui martor sau a unei victime</h3>
-            <p class="desc">Orice persoană care impiedică sau descurajează orice martor sau victimă de la participarea sa de a da mărturie într-un proces, cu utilizarea mitei, amenințării sau a altor tactici, cu bună știință şi rea intenție.<br>● Codul Penal (4)03 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 35 minute — AMENDA: $50.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)04. Rezistență la Arest</h3>
-            <p class="desc">Orice persoană care opune rezistență când trebuie să fie arestată SAU reținută de ofițeri ai păcii. Această acuzație înlocuiește fosta acuzație ''Evadarea de un ofițer fără un autovehicul'' și trebuie folosită când un suspect se folosește de fugă pentru a evita arestul.<br>● Codul Penal (4)04 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 10 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)05. Eşecul de a plăti o amendă</h3>
-            <p class="desc">Orice persoană care eşueaza plata a unei amenzi și trece de timpul limită oferit de ofițer, fără o scuză convenabilă, chiar dacă amenda este plătită după timpul limită.<br>● Codul Penal (4)05 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 10 minute</p>
-        </div>
-        <div class="crime">
-            <h3>(4)06. Eşecul identificarii</h3>
-            <p class="desc">Orice persoană care refuză să se identifice unui ofițer cu un act legal sau cu numele său.<br>● Codul Penal (4)06 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 15 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)07. Abuzul liniei de urgenţă</h3>
-            <p class="desc">Orice persoană care folosește o linie de urgenţă cu scopul de a face farse, de a da informații false sau de a contacta un ofițer fără scopul de a raporta o crimă sau necesitatea de a chema asistentă.<br>În cazul în care abuzul liniei de urgență cauzează mobilizarea de resurse în masă (cum ar fi în cazul răpirilor), suspectul trebuie arestat pentru timpul maxim.<br>● Codul Penal (4)07 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 20 minute — AMENDA: $9.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)08. Limbaj vulgar</h3>
-            <p class="desc">Orice persoană folosește cuvinte vulgare cu scopul de a jignii, intimida sau obține avantaj în fața altei persoane.<br>● Codul Penal (4)08 reprezintă o infracţiune care se poate pedepsi cu amendă.</p>
-            <p class="penalty">AMENDA: $3.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)09. Obstrucția unui ofiţer</h3>
-            <p class="desc">Orice cetăţean care împiedică un ofițer să-şi face treabă corect sau periclitează siguranța ofițerului sau a oricărui civil care este alături. A nu se acorda împreună cu Rezistență la Arest.<br>● Codul Penal (4)09 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 20 minute — AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)10. Evadarea din custodie</h3>
-            <p class="desc">Orice persoană care a fost reţinută fizic de către un ofiţer de poliţie şi evadează din posesia acestora rezultând într-o percheziţie sau un mandat de arestare să fie executate.<br>● Codul Penal (4)10 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 25 minute — AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)11A. Codul Muncii (Angajari)</h3>
-            <p class="desc">În lipsa unui contract individual de muncă declarat, lucrătorii nu plătesc absolut nimic la stat şi nu figurează nicăieri ca angajaţi, astfel că nu se pot bucura de avantajele şi beneficiile unui salariat cu forme legale ceea ce inseamna inselarea statului si se pedepseste penal. Practic in momentul in care o persoana este prinsa incercand sa vanda anumite bunuri fara masina si uniforma specifica locului de munca asta inseamna incalcarea Codului Muncii.<br>● Codul Penal (4)11A reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 15 minute — AMENDA: $4.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)11B. Codul Muncii (Licente / Atestate)</h3>
-            <p class="desc">Efectuarea serviciilor fara detinerea de licenta sau atestat in domeniul unde este specificat ca necesita, inseamna inselarea statului si se pedepseste penal. In momentul in care o persoana este prinsa fara aceste documente de tip "atestat" sau "licenta" inseamna incalcarea Codului Muncii.<br>● Codul Penal (4)11B reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 15 minute — AMENDA: $6.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)12. Fals in declaratii</h3>
-            <p class="desc">Declararea necorespunzătoare adevărului, făcută unui organ sau instituţii de stat în vederea producerii unei consecinţe juridice, pentru sine sau pentru altul.<br>● Codul Penal (4)12 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 25 minute — AMENDA: $2.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(4)13. Ultraj</h3>
-            <p class="desc">Infracțiune care constă în insultă, injosire, calomnie, vandalism, amenințare ori alte acte de violență verbala cat si fizica împotriva unui agent de politie.<br>● Codul Penal (4)13 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 30 minute — AMENDA: $5.000.000</p>
-             <p class="desc">● ATENTIE: Aceasta sanctiune nu se va da impreuna cu o actiune din cap 9.</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap5">
-          <div class="crime">
-              <h3>(5)01. Deranjarea liniştii publice</h3>
-              <p class="desc">Atunci când un civil dă volumul unui aparat electronic la maxim, vorbește cu un ton prea ridicat, folosește semne obscene în public sau provoacă ceartă sau bătaie.<br>● Codul Penal (5)01 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 minute — AMENDA: $5.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(5)02. Instigarea unei revolte</h3>
-              <p class="desc">Atunci când unul sau mai mulți civili încearcă să creeze o revoltă cu tentativă de a distruge bunurile publice sau de a răni mai mulți oameni pe care îi înconjoară.<br>● Codul Penal (5)02 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 minute — AMENDA: $7.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(5)03. Eșecul de a părăsi un loc</h3>
-              <p class="desc">Atunci când unul sau mai mulți civili refuză să părăsească locul indicat de un ofițer al legii.<br>● Codul Penal (5)03 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 minute — AMENDA: $5.500.000</p>
-          </div>
-          <div class="crime">
-              <h3>(5)04. Calomnie</h3>
-              <p class="desc">Calomnia reprezintă afirmarea sau imputarea în public, prin orice mijloace, a unei fapte determinate privitoare la o persoană, care, dacă ar fi adevărată, ar expune acea persoană la o sancțiune penală, administrativă sau disciplinară ori disprețului public.<br>● Codul Penal (5)04 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 20 minute — AMENDA: $6.500.000</p>
-          </div>
-      </section>
-      
-      <section class="section" id="cap6">
-          <p class="chapter-note">ATENTIE: In cazul in care suspectul a savarsit mai multe infractiuni / crime din acest capitol o sa primeasca sentinta de la cea mai grava dintre ele. [ Cu exceptia (6)01. / (6)02. in functie de caz ] Insa aveti obligatia sa ii aduceti la cunostinta toate faptele savarsite.</p>
-          <div class="crime">
-              <h3>(6)01. Producerea sau detinerea de substanțe ilegale</h3>
-              <p class="desc">Orice cetăţean care produce, transportă, creează sau detine substanţe care sunt prevăzute de lege ca fiind ilegale, pe cale chimică sau naturală. Amenda se calculeaza in functie de cantitatea de droguri pe care o detine. ( Exemple: Marijuana / Pulse / Cocaina / LSD etc. )<br>● Codul Penal (6)01 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 - 45 minute — AMENDA: $5.000.000 - $10.000.000</p>
-              <p class="desc">● INFORMATII: In cazul in care este surprins ca produce / detine acest tip de obiecte ilegale, componentele necesare pentru producerea obiectelor o sa fie confiscate. ( Seminte / Efedrina / Otrava de sobolani / Acetona / Ingrasamant etc )<br>
-              TIP I: 3-15 droguri » 10 minute » 5.000.000$ amenda<br>
-              TIP II: 16-40 droguri » 15 minute » 6.000.000$ amenda<br>
-              TIP III: 41-80 droguri » 20 minute » 7.000.000$ amenda<br>
-              TIP IV: 81-120 droguri » 30 minute » 8.000.000$ amenda<br>
-              TIP V: 121+ droguri » 45 de minute » 10.000.000$ amenda</p>
-          </div>
-          <div class="crime">
-              <h3>(6)02. Producerea sau detinerea Trabucurilor de contrabanda</h3>
-              <p class="desc">Orice cetăţean care produce, transportă, creează sau detine trabucuri/cutie de trabucuri de contrabanda care sunt prevăzute de lege ca fiind ilegale, pe cale chimică sau naturală. Amenda se calculeaza in functie de cantitatea de trabucuri / cutie de trabucuri pe care o detine.<br>● Codul Penal (6)02 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 - 45 minute — AMENDA: $5.000.000 - $10.000.000</p>
-              <p class="desc">● INFORMATII: In cazul in care este surprins ca produce / detine acest tip de obiecte ilegale, componentele necesare pentru producerea obiectelor o sa fie confiscate. ( Foite / Tutun )<br>
-              <b>Trabucuri:</b><br>
-              TIP I: 5-10 trabucuri » 10 minute » 5.000.000$ amenda<br>
-              TIP II: 11-20 trabucuri » 15 minute » 6.000.000$ amenda<br>
-              TIP III: 21-30 trabucuri » 20 minute » 7.000.000$ amenda<br>
-              TIP IV: 31-40 trabucuri » 30 minute » 8.000.000$ amenda<br>
-              TIP V: 41+ trabucuri » 45 de minute » 10.000.000$ amenda<br>
-              <b>Cutie de Trabucuri:</b><br>
-              TIP I: 2-5 cutii » 10 minute » 5.000.000$ amenda<br>
-              TIP II: 6-10 cutii » 15 minute » 6.000.000$ amenda<br>
-              TIP III: 11-15 cutii » 20 minute » 7.000.000$ amenda<br>
-              TIP IV: 16-20 cutii » 30 minute » 8.000.000$ amenda<br>
-              TIP V: 21+ cutii » 45 de minute » 10.000.000$ amenda</p>
-          </div>
-          <div class="crime">
-              <h3>(6)03. Folosirea de substanțe ilegale</h3>
-              <p class="desc">Orice cetăţean care folosește substanțe ilegale sau este sub efectul drogurilor și pune în pericol viața sa sau a unui cetățean. Se aplică și la cetățenii care fac uz de MARIJUANA în PUBLIC.<br>● Codul Penal (6)03 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 15 minute — AMENDA: $6.500.000</p>
-          </div>
-          <div class="crime">
-              <h3>(6)04. Practicarea medicinei fără licenţă</h3>
-              <p class="desc">Orice cetățean care practică medicina fără un act legal primit de la instituțiile guvernamentale și încearcă să ajute viața unui civil, fără să aibă pregătirea necesară. Se aplică doar la persoanele care încearcă să injecteze sau să practice intervenții chirurgicale.<br>● Codul Penal (6)04 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 minute — AMENDA: $7.500.000</p>
-          </div>
-          <div class="crime">
-              <h3>(6)05. Terorism</h3>
-              <p class="desc">O persoană, grup de persoane sau organizație care, prin orice mijloace, provoacă în mod ilegal și intenționat violență și ameninţă să constrângă sau să intimideze, provocând astfel daune grave asupra proprietăţilor publice sau private, sistemelor de transport public şi a altor instituţii.<br>● Codul Penal (6)05 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 60 minute — AMENDA: $500.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(6)06. Testosteron</h3>
-              <p class="desc">Fabricarea, vânzarea, distribuirea, transportarea , cumpărarea, deţinerea ori alte operaţiuni privind circulaţia substanţelor dopante cu grad mare de risc, cu excepţia steroizilor anabolici sintetici, a testosteronului şi a derivaţilor săi chimice care sporesc producerea naturală şi eliberarea de testosteron sau de hormoni de creştere, fără drept, constituie o actiune penala.<br>● Codul Penal (6)06 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 10 minute — AMENDA: $10.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(6)07. Eveniment neautorizat in spatiul public</h3>
-              <p class="desc">Orice persoana sau grup de persoane care desfasoara un eveniment pe domeniul public fara obtinerea avizului printr-o cerere de audienta si acordul Politiei.<br>● Codul Penal (6)07 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 15 minute — AMENDA: $10.000.000</p>
-          </div>
-      </section>
-
-      <section class="section" id="cap7">
-        <div class="crime">
-          <h3>(7)01. Condusul fără permis</h3>
-          <p class="desc">Orice cetățean care conduce un vehicul fără să aibă un permis de conducere valid.<br>● Codul Penal (7)01 este o infracțiune care se poate pedepsi cu închisoare și amendă.</p>
-          <p class="penalty">SENTINTA: 20 minute - AMENDA: $20.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)02. Evadarea de un ofiţer cu un autovehicul</h3>
-            <p class="desc">Orice cetățean care folosește un vehicul pentru evada de un ofițer. Aici intră și (4)09. Obstrucţia unui ofiţer.<br>● Codul Penal (7)02 este o infracțiune care se poate pedepsi cu suspendarea permisului, închisoare și amendă.</p>
-            <p class="penalty">SENTINTA: 20 minute - AMENDA: $50.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)03. Părăsirea locului accidentului sau a unei scene</h3>
-            <p class="desc">Orice cetățean care fuge de la locul unui accident sau al unei crime, fără să se prezinte sau să sune autoritățile. Se aplică și pentru situațiile de "lovire și fugă".<br>● Codul Penal (7)03 este o infracțiune care se poate pedepsi cu închisoare și amendă.</p>
-            <p class="penalty">SENTINTA: 10 minute - AMENDA: $20.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)04. Conducere sub influența drogurilor sau a alcoolului</h3>
-            <p class="desc">Orice cetățean care este la volan și deține valoarea de 0.08% alcool în sânge sau este sub influența oricărui tip de narcotice și pune în pericol viață unui civil sau propria viață.<br>● Regula de trafic (7)04 este o infracțiune care se poate pedepsi cu închisoare, ridicarea mașinii, confiscarea permisului și amendă.</p>
-            <p class="penalty">SENTINTA: 20 minute - AMENDA: $25.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)05. Curse ilegale</h3>
-            <p class="desc">Orice cetățean care face orice tip de cursă pe stradă și nu are permisiunea legală a poliției, punând în pericol viață civililor.<br>● Regula de trafic (7)05 este o infracțiune care se poate pedepsi cu suspendarea permisului, închisoare, ridicarea mașinii și amendă.</p>
-            <p class="penalty">SENTINTA: 15 minute - AMENDA: $30.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)06. Greutatea maxima admisa pe drumurile publice (I.S.C.T.R.)</h3>
-            <p class="desc">Orice cetățean care transportă mărfuri şi depăşeşte greutatea maximă adminsă pe drumurile publice fără un act sau adeverinţă prin care să ateste că poate transporta marfă cu greutate mai mare decât cea adminsă.<br>
-                <b>Greutate maxima admisa cu o remorca:</b> 500KG<br>
-                <b>Greutate maxima admisa cu un camion fara remorca:</b> 250KG<br>
-                <b>Greutate maxima admisa cu o duba:</b> 100KG<br>
-                ● Regula de trafic (7)06 este o contraventie care se poate pedepsi cu suspendarea atestatului (dacă e cazul), suspendarea permisului, confiscarea mărfii si amendă.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-            <p class="desc">● ATENTIE! Doar masinile marcate de I.S.C.T.R. au dreptul sa faca acesta verificare si perchezitie (EXCEPȚIE în zonele marcate sau locații ilegale unde orice Polițist are dreptul). Politistii au dreptul la un Traffic Stop sa cheme o unitate I.S.C.T.R. pentru o verificare.</p>
-        </div>
-        <div class="crime">
-            <h3>(7)07. Scoaterea placutelor de inmatriculare</h3>
-            <p class="desc">Orice cetățean care isi scoate intentionat placutele de inmatriculare de pe vehicul si este prins pe drumurile publice.<br>● Regula de trafic (7)07 este o infracțiune care se poate pedepsi cu suspendarea permisului, închisoare, ridicarea mașinii și amendă.</p>
-            <p class="penalty">SENTINTA: 15 minute - AMENDA: $40.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(7)08. Complicitate la o actiune penala</h3>
-            <p class="desc">Orice cetățean care ia parte la orice actiune de natura penala care nu a fost provocata de el se pedepseste cu jumatate din sentinta celui care a provocat actiunea.<br>● Codul Penal (7)08 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-            <p class="penalty">SENTINTA: 1/2 din sentinta autorului principal</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap8">
-        <div class="crime">
-            <h3>(8)01. Viteza legală</h3>
-            <p class="desc">Orice cetățean care încalcă limitele de viteză stabilite.<br>
-            <b>Autoturism:</b> Autostrăzi 150 km/h, Drum național 100 km/h, Oraș 70 km/h.<br>
-            <b>Camion:</b> Autostrăzi 100 km/h, Drum național 80 km/h, Oraș 60 km/h.<br>
-            ● Regula de trafic (8)01 este o contraventie care se pedepsește cu amendă.<br>
-            ● ATENTIE: Daca viteza este dublă peste limita legală, se pedepsește cu închisoare 30 minute, amendă și suspendarea permisului.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)02. Parcare ilegală</h3>
-            <p class="desc">Orice cetățean care își parchează ilegal mașina. Este INTERZIS sa parcati pe BORDURA! Aveti dreptul langa bordura doar daca bordura nu este vopsita cu ROSU! Bordura ROSIE reprezinta PARCARE INTERZISA!<br>● Regula de trafic (8)02 este o contraventie care se pedepsește cu amendă sau ridicarea mașinii.</p>
-            <p class="penalty">AMENDA: $15.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)03. Conducere imprudentă</h3>
-            <p class="desc">Orice cetățean care operează un vehicul agresiv, nu se asigură, are viteză excesivă sau pune în pericol viaţa sa sau a altor persoane.<br>● Regula de trafic (8)03 este o contraventie care se pedepsește cu suspendarea permisului și amendă.</p>
-            <p class="penalty">AMENDA: $8.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)04. Claxonare excesivă</h3>
-            <p class="desc">Orice cetățean care claxonează în zone interzise sau într-un mod excesiv.<br>● Regula de trafic (8)04 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)05. Geamuri fumurii</h3>
-            <p class="desc">Orice cetățean care deține geamuri fumurii la mașină și împiedică recunoașterea conducătorului de către ofițer va fii sancționat.<br>● Regula de trafic (8)05 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $7.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)06. Neoane</h3>
-            <p class="desc">Orice cetățean care are montate neoane sub autovehicul va fii sanctionat. Este strict interzis montarea neoanelor.<br>● Regula de trafic (8)06 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $8.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)07. Traversarea interzisă</h3>
-            <p class="desc">Orice cetățean care traversează printr-un loc în care trecerea nu e permisă, punând în pericol viața sa sau a altora.<br>● Regula de trafic (8)07 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $3.500.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)08. Nerespectarea culorii rosii a semaforului</h3>
-            <p class="desc">Orice conducator de autovehicul care trece pe culoarea rosie a semaforului. (Cu excepția vehiculelor guvernamentale cu semnale pornite).<br>
-            ● Se poate vira la dreapta pe roșu cu acordare de prioritate.<br>
-            ● Între 01:00 - 13:00, roșu se consideră galben intermitent, respectând prioritatea de dreapta.<br>
-            ● Regula de trafic (8)08 este o contraventie care se pedepsește cu suspendarea permisului și amendă.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)09. Folosirea telefonului in timpul condusului</h3>
-            <p class="desc">Orice conducator de autovehicul ii este stric interzis sa foloseasca telefonul in timp ce conduce.<br>● Regula de trafic (8)09 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $5.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)10. Claxon Custom</h3>
-            <p class="desc">Orice conducator de autovehicul care isi monteaza un claxon custom inafara celui stock va fii sanctionat.<br>● Regula de trafic (8)10 este o contraventie care se pedepsește cu amendă.</p>
-            <p class="penalty">AMENDA: $6.500.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)11. Nerespectarea marcajelor rutiere</h3>
-            <p class="desc">Orice conducator de autovehicul care nu respecta marcajele rutiere (STOP / Dubla continua etc) va fi sanctionat.<br>● Regula de trafic (8)11 este o contraventie care se pedepsește cu suspendarea permisului și amendă.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)12. Acoperirea fetei la volan</h3>
-            <p class="desc">Orice conducator de autovehicul care poartă o masca/bandana sau orice alt obiect ce ii acopera fata va fi sanctionat, deoarece vizibilitatea este redusă.<br>● Regula de trafic (8)12 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $50.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)13. Anvelope de iarna</h3>
-            <p class="desc">Orice conducator de autovehicul este obligat in momentul in care pe carosabil se afla zapada, gheata sau polei sa aiba autovehiculul dotat cu anvelope de iarna (Clasa OFF-ROAD).<br>● Regula de trafic (8)13 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)14. Autorizatie Camioane</h3>
-            <p class="desc">Orice conducator de autocamion care este surprins in oras cu Camionul + Remorca (cu excepția camioanelor cu Cisterna sau cu Prelata care au incarcatura Combustibil).<br>● Regula de trafic (8)14 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $10.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)15. Neacordare de Prioritate</h3>
-            <p class="desc">Orice conducator de autovehicul care nu acorda prioritate vehiculelor sau pietonilor care au acest drept va fi sanctionat.<br>● Regula de trafic (8)15 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $3.500.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)16. Nerespectarea semnelor de circulatie ale Politistului</h3>
-            <p class="desc">Orice conducator de autovehicul care nu respecta semnele de circulatie impuse de Politist va fi sanctionat.<br>
-            <b>POLITISTUL cu FAȚA/SPATELE:</b> OPRIRE!<br>
-            <b>POLITISTUL cu mâna orientată spre dvs.:</b> TRECEȚI!<br>
-            ● Regula de trafic (8)16 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $20.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)17. Utilizarea Nos-ului pe drumurile publice</h3>
-            <p class="desc">Orice conducator de autovehicul care foloseste butelia de NOS pe drumurile publice va fi sanctionat. Nu este ilegal sa aveti instalatia de NOS, este ilegal sa fie folosita pe drumurile publice.<br>● Regula de trafic (8)17 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: $17.500.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)18. Nerespectarea semnalelor luminoase si sonore</h3>
-            <p class="desc">Orice conducator are obligatia sa traga cat mai aproape de marginea drumului si sa opreasca daca este necesar in momentul in care vede un vehicul de Poliție sau SMURD cu semnalele pornite.<br>● Regula de trafic (8)18 este o contraventie care se pedepsește cu suspendarea permisului și amendă.</p>
-            <p class="penalty">AMENDA: 25.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)19. Instalatie lumini aftermarket</h3>
-            <p class="desc">Orice conducator de autovehicul care detine pe vehicul o instalatie de lumini aftermarket de alta culoare inafara de ALB si respectiv ALBASTRU (XENON) va fi sanctionat.<br>● Regula de trafic (8)19 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: 15.000.000</p>
-        </div>
-        <div class="crime">
-            <h3>(8)20. Trecere frauduloasa in Portul Los Santos</h3>
-            <p class="desc">Orice conducator de autovehicul care trece ILEGAL prin PORTILE de la Portul Los Santos fara sa plateasca va fi sanctionat. ATENTIE! Organul de politie constatator are DREPTUL sa perchezitioneze persoanele și vehiculul.<br>● Regula de trafic (8)20 este o contraventie care se pedepseste cu amendă.</p>
-            <p class="penalty">AMENDA: 7.500.000</p>
-        </div>
-      </section>
-
-      <section class="section" id="cap9">
-          <p class="chapter-note">ATENTIE: In cazul in care suspectul a savarsit mai multe infractiuni / crime din acest capitol o sa primeasca sentinta de la cea mai grava dintre ele. [ Cu exceptia (9)05. / (9)06. in functie de caz ] Insa aveti obligatia sa ii aduceti la cunostinta toate faptele savarsite.</p>
-          <div class="crime">
-              <h3>(9)01. Posesia unei arme de foc de calibru mic fără permis PORT-ARMĂ</h3>
-              <p class="desc">Orice cetățean care deține asupra lui o armă de foc de calibru mic fără să aibă un permis port-armă legal. Arma poate fi considerată "asupra lui" chiar dacă se află în casă sau într-o proprietate ce-i aparține.<br>● Codul Penal (9)01 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 25 minute — AMENDA: $15.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(9)02. Posesia unei arme automate de foc</h3>
-              <p class="desc">Orice cetățean care deține asupra lui o armă de foc automată, precum: AK47, SMG, TEC, SHOTGUN, M4, RIFLES, etc. sau derivate sau chiar gloanțe pentru aceste arme.<br>● Codul Penal (9)02 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 35 minute — AMENDA: $17.500.000</p>
-              <p class="desc">● ATENTIE: In cazul in care detine si o arma de calibru mic nu se mai adauga sentinta (9)01.</p>
-          </div>
-          <div class="crime">
-              <h3>(9)03.1 Traficul de armament</h3>
-              <p class="desc">Orice cetățean care nu deține un permis pentru vânzarea de arme și intenționează să le vândă pe piața neagră.<br>● Codul Penal (9)03.1 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 25 minute — AMENDA: $10.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(9)03.2 Traficul de munitie</h3>
-              <p class="desc">Orice cetățean care deține munitie pentru arme indiferent de calibru' și intenționează să le foloseasca sau vândă pe piața neagră.<br>● Codul Penal (9)03.2 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 25 minute — AMENDA: $10.000.000</p>
-              <p class="desc">● ATENTIE: Aceasta sanctiune nu se va da impreuna cu (9)01, (9)02, (9)05 si (9)06.</p>
-          </div>
-          <div class="crime">
-              <h3>(9)04. Posesia de explozibil</h3>
-              <p class="desc">Orice cetățean care deține asupra lui explozibil sau obiecte inflamabile ce pot duce la vătămarea corporală gravă a unui civil sau chiar la moarte.<br>● Codul Penal (9)04 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 45 minute — AMENDA: $25.000.000</p>
-          </div>
-          <div class="crime">
-              <h3>(9)05. Îndreptarea unei arme asupra unui obiect</h3>
-              <p class="desc">Orice cetățean care deține asupra lui o armă de foc și o îndreaptă asupra unui obiect cu intenția de a folosi arma pe acel obiect sau doar să țintească înspre acel obiect.<br>● Codul Penal (9)05 reprezintă o infracţiune care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 20 minute - AMENDA: 27.750.000</p>
-              <p class="desc">● NOTA: Aceasta infractiune se adauga in plus cu (9)01. si (9)02. in functie de caz.</p>
-          </div>
-          <div class="crime">
-              <h3>(9)06. Descărcarea letală a unei arme de foc</h3>
-              <p class="desc">Orice cetățean care folosește (descarcă letal) o armă de foc, din greșeală sau fără să aibă vreo explicaţie corectă pentru fapta sa.<br>● Codul Penal (9)06 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 35 minute - AMENDA: 23.500.000</p>
-              <p class="desc">● NOTA: Aceasta infractiune se adauga in plus cu (9)01. si (9)02. in functie de caz.</p>
-          </div>
-          <div class="crime">
-              <h3>(9)07. Posesia unei arme albe</h3>
-              <p class="desc">Orice cetățean care poartă, fără drept, în locuri publice, a cuţitului, pumnalului, batei, etc ori a altor asemenea obiecte fabricate anume pentru tăiere, împungere sau lovire.<br>● Codul Penal (9)07 reprezintă o crimă care se poate pedepsi cu închiderea suspectului.</p>
-              <p class="penalty">SENTINTA: 25 minute — AMENDA: $25.500.000</p>
-          </div>
-      </section>
-
+    <main class="main">
+      <div class="header"><h2 id="pageTitle">LSPD</h2></div>
+      <div id="contentArea"></div>
     </main>
   </div>
 
-  <script>
-    (function(){
-      const buttons = document.querySelectorAll('.cat-btn');
-      const sections = document.querySelectorAll('.section');
-      const title = document.getElementById('sectionTitle');
+<script>
+    const contentArea = document.getElementById('contentArea');
+    const pageTitle = document.getElementById('pageTitle');
+    
+    // Variabila care tine minte ce am selectat din meniu (Uniforme/Arme/Masini)
+    let currentCategory = ''; 
 
-      function show(key){
-        buttons.forEach(b=> b.classList.toggle('active', b.dataset.key===key));
-        sections.forEach(s=> s.classList.toggle('active', s.id===key));
-        const btn = document.querySelector(`.cat-btn[data-key="${key}"]`);
-        if(btn) title.textContent = btn.textContent;
+    async function loadHTML(filename) {
+      contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
+      try {
+        const response = await fetch('pages/' + filename + '.html');
+        if (!response.ok) throw new Error("Nu s-a găsit fișierul: " + filename);
+        contentArea.innerHTML = await response.text();
+      } catch (error) {
+        contentArea.innerHTML = `<div class="crime" style="border-color:red"><h3>Eroare</h3><p>Nu pot încărca fisierul: <b>pages/${filename}.html</b>.<br>Verifică dacă l-ai creat și ai scris numele corect.</p></div>`;
       }
+    }
 
-      buttons.forEach(b=>{
-        b.addEventListener('click', ()=> show(b.dataset.key));
-        b.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); b.click(); } });
-      });
+    // Incarca capitolele (Cod Penal)
+    function loadChapter(capKey, btnElement) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      if(btnElement) btnElement.classList.add('active');
+      pageTitle.textContent = btnElement ? btnElement.innerText : "Cod Penal";
+      loadHTML(capKey);
+    }
 
-      show('cap1');
+    // Pasul 1: Cand apesi pe meniu (ex: Uniforme)
+    function loadResource(type) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      
+      currentCategory = type.toLowerCase(); // Salvam categoria (uniforme, arme, masini)
+      pageTitle.textContent = "Gestiune: " + type;
+      
+      loadHTML('selectie_grade'); // Incarcam meniul cu butoanele de grade
+    }
 
-      document.addEventListener('keydown', (e)=>{
-        const keys = Array.from(buttons).map(b=>b.dataset.key);
-        const idx = keys.indexOf(document.querySelector('.cat-btn.active').dataset.key);
-        if(e.key === 'ArrowDown' || e.key === 'ArrowRight'){
-          const next = keys[(idx+1)%keys.length]; show(next);
-        }
-        if(e.key === 'ArrowUp' || e.key === 'ArrowLeft'){
-          const prev = keys[(idx-1+keys.length)%keys.length]; show(prev);
-        }
-      });
-    })();
+    // Pasul 2: Cand apesi pe un Grad (Cadet, Agent etc)
+    function openRankPage(rank) {
+      // Construim numele fisierului automat based pe ce am ales anterior
+      // Ex: "uniforme_cadet", "arme_inspector", "masini_agent"
+      const fileName = `${currentCategory}_${rank}`;
+      
+      // Incarcam fisierul respectiv
+      loadHTML(fileName);
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('dropdownMenu').classList.toggle('show');
+    });
+
+    // Pornire default
+    loadChapter('cap1', document.querySelector('.cat-btn'));
   </script>
 </body>
 </html>
