@@ -121,6 +121,8 @@
         <button class="drop-item" onclick="loadResource('Uniforme')"><span>👕</span> Uniforme</button>
         <button class="drop-item" onclick="loadResource('Arme')"><span>🔫</span> Arme</button>
         <button class="drop-item" onclick="loadResource('Masini')"><span>🚓</span> Mașini</button>
+        <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
+        <button class="drop-item" onclick="loadDocumentation('speed_insights_guide')"><span>⚡</span> Speed Insights</button>
       </div>
 
       <nav class="cats">
@@ -193,6 +195,14 @@
     function openRankPage(rank) {
       const fileName = `${currentCategory}_${rank}`;
       loadHTML(fileName);
+    }
+
+    function loadDocumentation(docName) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      sidebarTitle.innerText = "Documentație"; 
+      pageTitle.textContent = "Ghid Rapid - " + docName.replace(/_/g, ' ').toUpperCase();
+      dropdownMenu.classList.remove('show');
+      loadHTML(docName);
     }
 
     document.getElementById('menuToggle').addEventListener('click', () => {

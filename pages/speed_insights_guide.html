@@ -1,0 +1,158 @@
+<div style="animation: fadeIn 0.5s ease;">
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="font-size: 28px; color: #fff; margin: 0;">Getting started with Speed Insights</h1>
+        <p style="color: #9ca3af; margin: 10px 0 0 0;">A guide to enable and use Vercel Speed Insights on your project</p>
+    </div>
+
+    <div class="crime" style="border-left: 4px solid #3b82f6; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 24, 39, 0.8)); margin-bottom: 20px;">
+        <h3>Overview</h3>
+        <p class="desc">This guide will help you get started with using Vercel Speed Insights on your project, showing you how to enable it, add the package to your project, deploy your app to Vercel, and view your data in the dashboard.</p>
+        <p class="desc" style="margin-top: 10px;"><strong>Note:</strong> To view framework-specific instructions, use the framework selector at the top of this page.</p>
+    </div>
+
+    <div class="crime">
+        <h3>Prerequisites</h3>
+        <p class="desc">Before you get started, you'll need:</p>
+        <ul style="color: #cbd5e1; margin: 10px 0;">
+            <li>A Vercel account. If you don't have one, you can <a href="https://vercel.com/signup" style="color: #3b82f6; text-decoration: none;">sign up for free</a>.</li>
+            <li>A Vercel project. If you don't have one, you can <a href="https://vercel.com/new" style="color: #3b82f6; text-decoration: none;">create a new project</a>.</li>
+            <li>The Vercel CLI installed. You can install it using: <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">npm i vercel</code>, <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">yarn i vercel</code>, <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">pnpm i vercel</code>, or <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">bun i vercel</code></li>
+        </ul>
+    </div>
+
+    <div class="crime">
+        <h3>Step 1: Enable Speed Insights in Vercel</h3>
+        <p class="desc">
+            On the <a href="/dashboard" style="color: #3b82f6; text-decoration: none;">Vercel dashboard</a>, select your Project followed by the <strong>Speed Insights</strong> tab. Then, select <strong>Enable</strong> from the dialog.
+        </p>
+        <p class="desc" style="color: #f59e0b; margin-top: 10px;">
+            <strong>💡 Note:</strong> Enabling Speed Insights will add new routes (scoped at <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">/_vercel/speed-insights/*</code>) after your next deployment.
+        </p>
+    </div>
+
+    <div class="crime">
+        <h3>Step 2: Add @vercel/speed-insights to your project</h3>
+        <p class="desc">Using the package manager of your choice, add the <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">@vercel/speed-insights</code> package to your project:</p>
+        <div style="background: #0b1220; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; color: #cbd5e1;">
+            <div style="margin-bottom: 8px;"><strong style="color: #3b82f6;">npm:</strong> npm i @vercel/speed-insights</div>
+            <div style="margin-bottom: 8px;"><strong style="color: #3b82f6;">yarn:</strong> yarn i @vercel/speed-insights</div>
+            <div style="margin-bottom: 8px;"><strong style="color: #3b82f6;">pnpm:</strong> pnpm i @vercel/speed-insights</div>
+            <div><strong style="color: #3b82f6;">bun:</strong> bun i @vercel/speed-insights</div>
+        </div>
+        <p class="desc" style="color: #f59e0b; margin-top: 10px;">
+            <strong>Note for HTML projects:</strong> When using the HTML implementation, there is no need to install the <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">@vercel/speed-insights</code> package.
+        </p>
+    </div>
+
+    <div class="crime">
+        <h3>Step 3: Add the SpeedInsights component to your app</h3>
+        <p class="desc">The implementation varies based on your framework:</p>
+        
+        <div style="margin-top: 15px;">
+            <p style="color: #3b82f6; font-weight: 600;">Next.js (Pages Router):</p>
+            <div style="background: #0b1220; padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; font-size: 13px; color: #cbd5e1; margin-top: 8px; overflow-x: auto;">
+import type { AppProps } from 'next/app';<br>
+import { SpeedInsights } from '@vercel/speed-insights/next';<br>
+<br>
+function MyApp({ Component, pageProps }: AppProps) {<br>
+&nbsp;&nbsp;return (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Component {...pageProps} /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;SpeedInsights /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/&gt;<br>
+&nbsp;&nbsp;);<br>
+}<br>
+<br>
+export default MyApp;
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <p style="color: #3b82f6; font-weight: 600;">Next.js (App Router):</p>
+            <div style="background: #0b1220; padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; font-size: 13px; color: #cbd5e1; margin-top: 8px; overflow-x: auto;">
+import { SpeedInsights } from "@vercel/speed-insights/next";<br>
+<br>
+export default function RootLayout({<br>
+&nbsp;&nbsp;children,<br>
+}: {<br>
+&nbsp;&nbsp;children: React.ReactNode;<br>
+}) {<br>
+&nbsp;&nbsp;return (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;html lang="en"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;head&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;title&gt;My App&lt;/title&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/head&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;body&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{children}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;SpeedInsights /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/body&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/html&gt;<br>
+&nbsp;&nbsp;);<br>
+}
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <p style="color: #3b82f6; font-weight: 600;">React (Create React App):</p>
+            <div style="background: #0b1220; padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; font-size: 13px; color: #cbd5e1; margin-top: 8px; overflow-x: auto;">
+import { SpeedInsights } from '@vercel/speed-insights/react';<br>
+<br>
+export default function App() {<br>
+&nbsp;&nbsp;return (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{/* ... */}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;SpeedInsights /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;<br>
+&nbsp;&nbsp;);<br>
+}
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <p style="color: #3b82f6; font-weight: 600;">HTML:</p>
+            <p class="desc" style="margin: 8px 0;">Add the following scripts before the closing <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">&lt;/body&gt;</code> tag:</p>
+            <div style="background: #0b1220; padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; font-size: 13px; color: #cbd5e1; margin-top: 8px; overflow-x: auto;">
+&lt;script&gt;<br>
+&nbsp;&nbsp;window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };<br>
+&lt;/script&gt;<br>
+&lt;script defer src="/_vercel/speed-insights/script.js"&gt;&lt;/script&gt;
+            </div>
+        </div>
+    </div>
+
+    <div class="crime">
+        <h3>Step 4: Deploy your app to Vercel</h3>
+        <p class="desc">You can deploy your app to Vercel's global CDN by running:</p>
+        <div style="background: #0b1220; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(59, 130, 246, 0.3); font-family: monospace; color: #cbd5e1;">
+            vercel deploy
+        </div>
+        <p class="desc" style="margin-top: 10px;">Alternatively, you can <a href="/docs/git#deploying-a-git-repository" style="color: #3b82f6; text-decoration: none;">connect your project's git repository</a>, which will enable Vercel to deploy your latest pushes and merges to main.</p>
+        <p class="desc" style="color: #f59e0b; margin-top: 10px;">
+            <strong>💡 Note:</strong> If everything is set up correctly, you should be able to find the <code style="background: #0b1220; padding: 2px 6px; border-radius: 4px;">/_vercel/speed-insights/script.js</code> script inside the body tag of your page.
+        </p>
+    </div>
+
+    <div class="crime">
+        <h3>Step 5: View your data in the dashboard</h3>
+        <p class="desc">Once your app is deployed and users have visited your site, you can view the data in the dashboard.</p>
+        <p class="desc" style="margin-top: 10px;">To do so, go to your <a href="/dashboard" style="color: #3b82f6; text-decoration: none;">dashboard</a>, select your project, and click the <strong>Speed Insights</strong> tab.</p>
+        <p class="desc" style="margin-top: 10px;">After a few days of visitors, you'll be able to start exploring your metrics. For more information on how to use Speed Insights, see <a href="/docs/speed-insights/using-speed-insights" style="color: #3b82f6; text-decoration: none;">Using Speed Insights</a>.</p>
+    </div>
+
+    <div class="crime" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 24, 39, 0.8)); border-left-color: #22c55e;">
+        <h3>Learn More</h3>
+        <p class="desc">Now that you have Vercel Speed Insights set up, you can explore the following topics:</p>
+        <ul style="color: #cbd5e1; margin: 10px 0;">
+            <li><a href="/docs/speed-insights/package" style="color: #3b82f6; text-decoration: none;">Learn how to use the @vercel/speed-insights package</a></li>
+            <li><a href="/docs/speed-insights/metrics" style="color: #3b82f6; text-decoration: none;">Learn about metrics</a></li>
+            <li><a href="/docs/speed-insights/privacy-policy" style="color: #3b82f6; text-decoration: none;">Read about privacy and compliance</a></li>
+            <li><a href="/docs/speed-insights/limits-and-pricing" style="color: #3b82f6; text-decoration: none;">Explore pricing</a></li>
+            <li><a href="/docs/speed-insights/troubleshooting" style="color: #3b82f6; text-decoration: none;">Troubleshooting</a></li>
+        </ul>
+    </div>
+
+    <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
+        Learn more about how Vercel supports <a href="/docs/speed-insights/privacy-policy" style="color: #3b82f6; text-decoration: none;">privacy and data compliance standards</a> with Vercel Speed Insights.
+    </p>
+</div>
