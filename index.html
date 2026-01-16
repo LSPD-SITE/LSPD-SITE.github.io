@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>VPD — Ghid Oficial</title>
+  <title>VPD — Portal Oficial</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -18,34 +18,49 @@
     /* Sidebar */
     .sidebar{background:linear-gradient(180deg,var(--navy-2),var(--navy)); padding:18px; display:flex; flex-direction:column; gap:12px; border-right:1px solid var(--outline); overflow-y:auto; position: relative;}
     
-    /* Layout HEADER Sidebar modificat */
-    .brand{display:flex; gap:12px; align-items:center; margin-bottom: 5px;}
+    /* Layout Header Sidebar */
+    .brand{display:flex; gap:12px; align-items:center; margin-bottom: 5px; position: relative;}
     .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#071a3a,#0f2b57);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.4); flex-shrink:0; cursor: pointer;}
     
     .brand-text-area { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .brand-title-row { display: flex; align-items: center; gap: 8px; } /* Titlu + Meniu pe acelasi rand */
+    .brand-title-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 
-    /* Butonul de Meniu (Liniutele) */
+    /* Butonul de Meniu (Hamburger) */
     .menu-toggle { 
-        background: transparent; border: none; 
-        color: #ef4444; /* Rosu, ca in poza */
-        width: 24px; height: 24px; 
+        background: rgba(255,255,255,0.05); border: 1px solid var(--outline);
+        color: #fff; /* Culoare alba, curata */
+        width: 32px; height: 32px; border-radius: 6px;
         display: flex; align-items: center; justify-content: center; 
-        cursor: pointer; transition: .2s; font-size: 20px; padding: 0;
+        cursor: pointer; transition: all .2s ease; padding: 0;
     }
-    .menu-toggle:hover { transform: scale(1.1); }
+    .menu-toggle:hover { background: var(--highlight); transform: scale(1.05); }
     
-    /* Dropdown-ul apare imediat sub titlu */
-    .dropdown-menu { display: none; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid var(--outline); margin-bottom: 10px; animation: slideDown 0.2s ease;}
+    /* Dropdown "Alive" */
+    .dropdown-menu { 
+        display: none; 
+        flex-direction: column; 
+        gap: 6px; 
+        background: rgba(16, 24, 39, 0.95); /* Aproape opac pentru citire */
+        backdrop-filter: blur(10px); /* Efect de sticla */
+        padding: 12px; 
+        border-radius: 12px; 
+        border: 1px solid var(--outline); 
+        margin-bottom: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
     .dropdown-menu.show { display: flex; }
     
-    .drop-item { background: transparent; border: none; color: #cbd5e1; text-align: left; padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; transition: .2s; }
-    .drop-item:hover { background: var(--highlight); color: white; }
+    .drop-item { 
+        background: transparent; border: none; color: #cbd5e1; 
+        text-align: left; padding: 12px; font-weight: 600; font-size: 14px;
+        cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; 
+        transition: all .2s; border: 1px solid transparent;
+    }
+    .drop-item:hover { background: rgba(59, 130, 246, 0.1); color: var(--highlight); border-color: rgba(59, 130, 246, 0.3); transform: translateX(5px); }
+    .drop-item span { font-size: 16px; }
 
-    /* Buton Home */
-    .home-btn { background: rgba(59, 130, 246, 0.1); color: var(--highlight); border: 1px solid var(--outline); padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
-    .home-btn:hover { background: var(--highlight); color: white; }
-
+    /* Navigare */
     nav.cats ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
     button.cat-btn{appearance:none;border:0;background:transparent;color:inherit;text-align:left;padding:12px 14px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .18s; width:100%}
     button.cat-btn:hover{background:rgba(255,255,255,0.03)}
@@ -69,7 +84,7 @@
     .rank-btn:hover { transform: translateY(-5px); background: #1e3a8a; border-color: var(--highlight); }
 
     @keyframes fadeIn{ from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
-    @keyframes slideDown{ from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes popIn{ from{opacity:0; transform:scale(0.95)} to{opacity:1; transform:scale(1)} }
     @media (max-width:900px){ .app{grid-template-columns:1fr;} .sidebar{height:auto; max-height: 40vh;} nav.cats ul{flex-direction:row; overflow-x:auto; padding-bottom:10px;} button.cat-btn{white-space:nowrap;} }
   </style>
 </head>
@@ -81,10 +96,10 @@
         
         <div class="brand-text-area">
           <div class="brand-title-row">
-            <h1 id="sidebarTitle" style="font-size:16px; margin:0; font-weight: 800;">Vision Police</h1>
+            <h1 id="sidebarTitle" style="font-size:16px; margin:0; font-weight: 800; margin-right: 10px;">Vision Police</h1>
             
-            <button class="menu-toggle" id="menuToggle" title="Deschide Meniu">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <button class="menu-toggle" id="menuToggle" title="Meniu Principal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
           </div>
           <p style="font-size:12px; margin:0; color:var(--muted)">Portal Oficial</p>
@@ -92,12 +107,20 @@
       </div>
 
       <div class="dropdown-menu" id="dropdownMenu">
-        <button class="drop-item" onclick="loadResource('Uniforme')">👕 Uniforme</button>
-        <button class="drop-item" onclick="loadResource('Arme')">🔫 Arme</button>
-        <button class="drop-item" onclick="loadResource('Masini')">🚓 Mașini</button>
+        <button class="drop-item" onclick="loadHome()" style="color: var(--highlight); background: rgba(59, 130, 246, 0.08);">
+            <span>🏠</span> Acasă
+        </button>
+        <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
+        <button class="drop-item" onclick="loadResource('Uniforme')">
+            <span>👕</span> Uniforme
+        </button>
+        <button class="drop-item" onclick="loadResource('Arme')">
+            <span>🔫</span> Arme
+        </button>
+        <button class="drop-item" onclick="loadResource('Masini')">
+            <span>🚓</span> Mașini
+        </button>
       </div>
-
-      <button class="home-btn" onclick="loadHome()">🏠 ACASĂ</button>
 
       <nav class="cats">
         <ul>
@@ -129,11 +152,11 @@
     
     let currentCategory = ''; 
 
-    // Adaugam un parametru pentru a forta reincarcarea imaginilor
     async function loadHTML(filename) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       try {
-        const response = await fetch('pages/' + filename + '.html');
+        // Adaugam timestamp pentru a evita cache-ul (poate ajuta la poze)
+        const response = await fetch('pages/' + filename + '.html?v=' + new Date().getTime());
         if (!response.ok) throw new Error("Nu s-a găsit fișierul: " + filename);
         contentArea.innerHTML = await response.text();
       } catch (error) {
@@ -146,7 +169,7 @@
         
         sidebarTitle.innerText = "Vision Police"; 
         pageTitle.innerText = "Vision Police Departament";
-        dropdownMenu.classList.remove('show'); // Ascunde meniul daca e deschis
+        dropdownMenu.classList.remove('show');
         
         loadHTML('home_vpd');
     }
@@ -165,7 +188,6 @@
     function loadResource(type) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       
-      // Aici se schimba numele din "Vision Police" in "Uniforme", "Arme", etc.
       sidebarTitle.innerText = type; 
       currentCategory = type.toLowerCase(); 
       pageTitle.textContent = "Gestiune: " + type;
