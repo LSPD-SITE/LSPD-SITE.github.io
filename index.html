@@ -24,18 +24,13 @@
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        z-index: 0; /* In spate */
+        z-index: 0; 
         pointer-events: none;
-        opacity: 0; /* Controlat din JS */
+        opacity: 0; 
         transition: opacity 0.6s ease;
     }
 
-    /* Layout - Continutul sta PESTE canvas */
-    .app{
-        width:100%; height:100vh; display:flex; overflow: hidden; 
-        position: relative; 
-        z-index: 2; 
-    }
+    .app{ width:100%; height:100vh; display:flex; overflow: hidden; position: relative; z-index: 2; }
 
     /* SIDEBAR */
     .sidebar {
@@ -49,10 +44,9 @@
         flex-shrink: 0;
         overflow: visible; 
     }
-
     .sidebar.open { width: var(--sidebar-open); overflow: hidden; }
 
-    /* LOGO & Animatie Puls */
+    /* LOGO & Puls */
     .brand {
         height: 80px; display: flex; align-items: center; padding: 0 14px;
         border-bottom: 1px solid transparent; transition: 0.3s;
@@ -65,7 +59,6 @@
         70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
         100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
-
     .logo {
         width: 50px; height: 50px; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
@@ -74,11 +67,9 @@
         animation: subtlePulse 2s infinite;
     }
     .sidebar.open .logo { animation: none; } 
-
     .logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
     .brand:hover .logo { transform: scale(1.1); }
 
-    /* TOOLTIP */
     .brand::after {
         content: "Deschide Meniu ▶";
         position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
@@ -115,7 +106,6 @@
     /* CONTENT MAIN */
     .main { 
         flex: 1; 
-        /* Background mai transparent pentru a se vedea hexagoanele */
         background: rgba(17, 24, 39, 0.85); 
         padding: 40px; 
         overflow-y: auto; 
@@ -126,7 +116,6 @@
     .header { margin-bottom: 25px; border-bottom: 1px solid var(--outline); padding-bottom: 15px; }
     .header h2 { margin: 0; font-size: 24px; }
 
-    /* Stiluri Generale */
     .crime { margin-bottom:18px; padding:16px; border-radius:8px; background:linear-gradient(180deg,rgba(15, 23, 36, 0.9),rgba(11, 18, 32, 0.9)); border:1px solid rgba(255,255,255,0.02); animation: fadeIn 0.3s ease; }
     .crime h3 { margin:0 0 6px 0; color:#fff; }
     .crime p.desc { margin:0 0 8px 0; color:#cbd5e1; font-size:14px; line-height:1.5; }
@@ -211,17 +200,17 @@
     
     let currentCategory = ''; 
 
-    // --- SCRIPT ANIMATIE HEXAGOANE CU GLOW ---
+    // --- SCRIPT OPTIMIZAT (FARA LAG) ---
     const ctx = bgCanvas.getContext('2d');
     let width, height;
     let hexagons = [];
     const mouse = { x: -9999, y: -9999 };
 
-    // Configurare Hexagoane
-    const hexRadius = 35; // Marime
-    const hexGap = 80;    // Distanta
-    const interactionRadius = 180;
-    const pushStrength = 2.5;
+    // Configurare OPTIMIZATA
+    const hexRadius = 35; 
+    const hexGap = 90; // Distanta mai mare = mai putine obiecte = zero lag
+    const interactionRadius = 150;
+    const pushStrength = 2;
 
     function resize() {
         width = window.innerWidth;
@@ -255,8 +244,8 @@
 
             const returnX = this.originX - this.x;
             const returnY = this.originY - this.y;
-            this.vx += returnX * 0.03;
-            this.vy += returnY * 0.03;
+            this.vx += returnX * 0.05;
+            this.vy += returnY * 0.05;
             this.vx *= 0.9;
             this.vy *= 0.9;
             this.x += this.vx;
@@ -264,12 +253,7 @@
         }
 
         draw() {
-            ctx.save();
-            
-            // EFECTUL DE GLOW (STRĂLUCIRE)
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = "rgba(59, 130, 246, 0.6)"; // Albastru neon
-
+            // FARA GLOW COSTISITOR - Doar linie curata
             ctx.beginPath();
             for (let i = 0; i < 6; i++) {
                 const angle = 2 * Math.PI / 6 * i;
@@ -280,12 +264,9 @@
             }
             ctx.closePath();
             
-            // Culoarea liniei (semi-transparenta)
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.5)"; 
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; // Albastru tehnologic
             ctx.stroke();
-            
-            ctx.restore();
         }
     }
 
@@ -342,11 +323,9 @@
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
       // LOGICA VIZIBILITATE FUNDAL
-      // Ascundem fundalul doar daca filename incepe cu "cap" (adica e Cod Penal)
       if(filename.startsWith('cap')) {
           bgCanvas.style.opacity = '0';
       } else {
-          // Pe Home, Uniforme, Arme, Masini -> Apare
           bgCanvas.style.opacity = '1';
       }
 
