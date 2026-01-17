@@ -115,8 +115,8 @@
     /* CONTENT MAIN */
     .main { 
         flex: 1; 
-        /* Background mai transparent pentru a se vedea logo-urile */
-        background: rgba(17, 24, 39, 0.80); 
+        /* Background mai transparent pentru a se vedea hexagoanele */
+        background: rgba(17, 24, 39, 0.85); 
         padding: 40px; 
         overflow-y: auto; 
         position: relative; 
@@ -211,19 +211,15 @@
     
     let currentCategory = ''; 
 
-    // --- SCRIPT ANIMATIE LOGO ---
+    // --- SCRIPT ANIMATIE HEXAGOANE CU GLOW ---
     const ctx = bgCanvas.getContext('2d');
     let width, height;
-    let particles = [];
+    let hexagons = [];
     const mouse = { x: -9999, y: -9999 };
 
-    // Incarcam Logo-ul
-    const logoImg = new Image();
-    logoImg.src = 'images/logo.png'; // Asigura-te ca imaginea exista!
-
-    // Configurare
-    const imgSize = 45; // Dimensiunea logo-urilor
-    const gap = 100;    // Distanta dintre ele (mai mare = mai putine)
+    // Configurare Hexagoane
+    const hexRadius = 35; // Marime
+    const hexGap = 80;    // Distanta
     const interactionRadius = 180;
     const pushStrength = 2.5;
 
@@ -232,10 +228,10 @@
         height = window.innerHeight;
         bgCanvas.width = width;
         bgCanvas.height = height;
-        initParticles();
+        initHexagons();
     }
 
-    class Particle {
+    class Hexagon {
         constructor(x, y) {
             this.x = x;
             this.y = y;
@@ -269,30 +265,37 @@
 
         draw() {
             ctx.save();
-            // Efectul de Glow
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "rgba(59, 130, 246, 0.8)"; // Glow albastru
             
-            // Desenam Logo-ul usor transparent
-            ctx.globalAlpha = 0.35; 
-            
-            // Centram imaginea pe coordonate
-            if (logoImg.complete) {
-                ctx.drawImage(logoImg, this.x - imgSize/2, this.y - imgSize/2, imgSize, imgSize);
+            // EFECTUL DE GLOW (STRĂLUCIRE)
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "rgba(59, 130, 246, 0.6)"; // Albastru neon
+
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const x_i = this.x + hexRadius * Math.cos(angle);
+                const y_i = this.y + hexRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x_i, y_i);
+                else ctx.lineTo(x_i, y_i);
             }
+            ctx.closePath();
+            
+            // Culoarea liniei (semi-transparenta)
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.5)"; 
+            ctx.lineWidth = 2;
+            ctx.stroke();
             
             ctx.restore();
         }
     }
 
-    function initParticles() {
-        particles = [];
+    function initHexagons() {
+        hexagons = [];
         let row = 0;
-        // Grila hexagonala (staggered)
-        for (let y = 0; y < height + gap; y += gap * 0.85) {
-            const offset = (row % 2 === 0) ? 0 : gap / 2;
-            for (let x = -gap; x < width + gap; x += gap) {
-                particles.push(new Particle(x + offset, y));
+        for (let y = 0; y < height + hexRadius; y += hexGap * 0.85) {
+            const offset = (row % 2 === 0) ? 0 : hexGap / 2;
+            for (let x = -hexRadius; x < width + hexRadius; x += hexGap) {
+                hexagons.push(new Hexagon(x + offset, y));
             }
             row++;
         }
@@ -300,9 +303,9 @@
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
+        hexagons.forEach(h => {
+            h.update();
+            h.draw();
         });
         requestAnimationFrame(animate);
     }
