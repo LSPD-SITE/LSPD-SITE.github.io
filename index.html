@@ -24,14 +24,18 @@
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        z-index: 0; /* In spatele textului, dar peste background */
-        pointer-events: none; /* Sa poti da click prin el */
-        opacity: 0; /* Ascuns default, apare doar pe Home */
-        transition: opacity 0.8s ease;
+        z-index: 1; /* Nivelul 1: Peste fundalul body */
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
     }
 
     /* Layout */
-    .app{width:100%; height:100vh; display:flex; overflow: hidden; position: relative; z-index: 1;}
+    .app{
+        width:100%; height:100vh; display:flex; overflow: hidden; 
+        position: relative; 
+        z-index: 2; /* Nivelul 2: Peste Canvas */
+    }
 
     /* SIDEBAR */
     .sidebar {
@@ -48,7 +52,7 @@
 
     .sidebar.open { width: var(--sidebar-open); overflow: hidden; }
 
-    /* LOGO Area & Animatie */
+    /* LOGO & Animatie */
     .brand {
         height: 80px; display: flex; align-items: center; padding: 0 14px;
         border-bottom: 1px solid transparent; transition: 0.3s;
@@ -85,7 +89,6 @@
     }
     .sidebar:not(.open) .brand:hover::after { opacity: 1; left: 85px; }
 
-    /* Navigare */
     .brand-text { margin-left: 15px; opacity: 0; white-space: nowrap; pointer-events: none; transition: opacity 0.2s; transform: translateX(-10px); }
     .sidebar.open .brand-text { opacity: 1; pointer-events: auto; transform: translateX(0); transition-delay: 0.1s; }
 
@@ -109,11 +112,19 @@
     .footer-info { padding: 20px; font-size: 11px; color: var(--muted); text-align: center; opacity: 0; transition: 0.3s; white-space: nowrap; }
     .sidebar.open .footer-info { opacity: 1; }
 
-    .main { flex: 1; background: rgba(17, 24, 39, 0.85); /* Transparenta usoara pt background */ padding: 40px; overflow-y: auto; position: relative; backdrop-filter: blur(5px); }
+    /* MODIFICARE: Background semi-transparent pentru a vedea animatia */
+    .main { 
+        flex: 1; 
+        background: rgba(17, 24, 39, 0.85); /* 85% opacitate ca sa se vada prin el */
+        padding: 40px; 
+        overflow-y: auto; 
+        position: relative; 
+        backdrop-filter: blur(3px); /* Efect de blur peste hexagoane */
+    }
+    
     .header { margin-bottom: 25px; border-bottom: 1px solid var(--outline); padding-bottom: 15px; }
     .header h2 { margin: 0; font-size: 24px; }
 
-    /* Stiluri Continut */
     .crime { margin-bottom:18px; padding:16px; border-radius:8px; background:linear-gradient(180deg,rgba(15, 23, 36, 0.9),rgba(11, 18, 32, 0.9)); border:1px solid rgba(255,255,255,0.02); animation: fadeIn 0.3s ease; }
     .crime h3 { margin:0 0 6px 0; color:#fff; }
     .crime p.desc { margin:0 0 8px 0; color:#cbd5e1; font-size:14px; line-height:1.5; }
@@ -198,17 +209,17 @@
     
     let currentCategory = ''; 
 
-    // --- HEXAGON ANIMATION SCRIPT ---
+    // --- SCRIPT ANIMATIE HEXAGOANE (MODIFICAT PT VIZIBILITATE) ---
     const ctx = hexCanvas.getContext('2d');
     let width, height;
     let hexagons = [];
-    const mouse = { x: -1000, y: -1000 };
+    // Mouse-ul e initializat departe ca sa nu miste piesele la start
+    const mouse = { x: -9999, y: -9999 };
 
-    // Configurare
-    const hexRadius = 25; // Marimea
-    const hexGap = 60; // Distanta intre ele
-    const interactionRadius = 150; // Cat de aproape sa fie mouse-ul
-    const pushStrength = 0.5; // Cat de tare fuge
+    const hexRadius = 30; // Putin mai mari
+    const hexGap = 70; 
+    const interactionRadius = 200; // Raza mai mare de interactiune
+    const pushStrength = 2; // Impingere mai puternica
 
     function resize() {
         width = window.innerWidth;
@@ -229,27 +240,26 @@
         }
 
         update() {
-            // Distanta fata de mouse
             const dx = mouse.x - this.x;
             const dy = mouse.y - this.y;
             const distance = Math.sqrt(dx*dx + dy*dy);
             
-            // Logica de "Fuga"
             if(distance < interactionRadius) {
                 const angle = Math.atan2(dy, dx);
                 const force = (interactionRadius - distance) / interactionRadius;
+                // Impingem in directia opusa mouse-ului
                 this.vx -= Math.cos(angle) * force * pushStrength;
                 this.vy -= Math.sin(angle) * force * pushStrength;
             }
 
-            // Revenire la origine (Elasticitate)
+            // Revenire la pozitia originala
             const returnX = this.originX - this.x;
             const returnY = this.originY - this.y;
-            this.vx += returnX * 0.05;
-            this.vy += returnY * 0.05;
+            
+            this.vx += returnX * 0.03; // Viteza de revenire
+            this.vy += returnY * 0.03;
 
-            // Frecare (sa se opreasca incet)
-            this.vx *= 0.9;
+            this.vx *= 0.9; // Frecare
             this.vy *= 0.9;
 
             this.x += this.vx;
@@ -266,13 +276,10 @@
                 else ctx.lineTo(x_i, y_i);
             }
             ctx.closePath();
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.2)"; // Culoare contur (Albastru sters)
-            ctx.lineWidth = 1;
+            // CULOARE MAI VIZIBILA
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; 
+            ctx.lineWidth = 1.5;
             ctx.stroke();
-            
-            // Optional: umplere usoara
-            // ctx.fillStyle = "rgba(59, 130, 246, 0.02)";
-            // ctx.fill();
         }
     }
 
@@ -305,10 +312,9 @@
         mouse.y = e.clientY;
     });
 
-    // Pornire animatie
     resize();
     animate();
-    // ----------------------------
+    // -----------------------------------------------------------
 
     function toggleSidebar() {
         sidebar.classList.toggle('open');
@@ -332,7 +338,6 @@
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
       // LOGICA VIZIBILITATE HEXAGOANE
-      // Daca pagina este home_vpd, arata hexagoanele. Altfel, ascunde-le.
       if(filename === 'home_vpd') {
           hexCanvas.style.opacity = '1';
       } else {
@@ -381,6 +386,7 @@
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
     }
 
+    // Initializare
     loadHome();
   </script>
 </body>
