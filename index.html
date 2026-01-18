@@ -200,15 +200,16 @@
     
     let currentCategory = ''; 
 
-    // --- SCRIPT ANIMATIE HEXAGOANE (CU GLOW) ---
+    // --- SCRIPT OPTIMIZAT MAXIM (ZERO LAG) ---
     const ctx = bgCanvas.getContext('2d');
     let width, height;
     let hexagons = [];
     const mouse = { x: -9999, y: -9999 };
 
-    const hexRadius = 35; 
-    const hexGap = 90; 
-    const interactionRadius = 180;
+    // Configurare OPTIMIZATA
+    const hexRadius = 40; 
+    const hexGap = 120; // Rarit semnificativ pentru performanta
+    const interactionRadius = 150;
     const pushStrength = 2;
 
     function resize() {
@@ -252,11 +253,7 @@
         }
 
         draw() {
-            ctx.save();
-            // Efect de GLOW
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "rgba(59, 130, 246, 0.5)";
-
+            // Am scos SHADOWBLUR complet. Acesta cauza lagul.
             ctx.beginPath();
             for (let i = 0; i < 6; i++) {
                 const angle = 2 * Math.PI / 6 * i;
@@ -267,10 +264,14 @@
             }
             ctx.closePath();
             
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1;
+            // Linie mai vizibila, dar fara umbre
             ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; 
             ctx.stroke();
-            ctx.restore();
+            
+            // Un mic punct in mijloc pentru efect "tech"
+            ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+            ctx.fill();
         }
     }
 
@@ -323,18 +324,15 @@
         resetActiveButtons();
     }
 
-    // --- FUNCTIA NOUA CU ROUTING (URL UNIQUE) ---
     async function loadHTML(filename, updateHistory = true) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
-      // LOGICA VIZIBILITATE FUNDAL
       if(filename.startsWith('cap')) {
           bgCanvas.style.opacity = '0';
       } else {
           bgCanvas.style.opacity = '1';
       }
 
-      // ROUTING: Actualizam URL-ul in browser
       if (updateHistory) {
           const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + filename;
           window.history.pushState({path: newUrl}, '', newUrl);
@@ -382,26 +380,20 @@
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
     }
 
-    // --- INITIALIZARE CU VERIFICARE URL ---
     window.addEventListener('load', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const page = urlParams.get('page');
 
         if (page) {
-            // Daca avem ?page=ceva in link, incarcam pagina aia
             loadHTML(page, false);
-            
-            // Logica pentru a seta titlurile si meniurile active corect la refresh
             if(page.startsWith('cap')) {
                 pageTitle.innerText = "Cod Penal";
                 if (!sidebar.classList.contains('open')) sidebar.classList.add('open');
                 codPenalSubmenu.classList.add('open');
             } else if (page === 'selectie_grade') {
-                 // E greu de stiut categoria doar din 'selectie_grade', dar lasam generic
                  pageTitle.innerText = "Gestiune Resurse";
             } else if (page.includes('_')) {
-                 // Daca e o pagina de grad (ex: uniforme_cadet)
-                 const category = page.split('_')[0]; // 'uniforme'
+                 const category = page.split('_')[0];
                  currentCategory = category;
                  pageTitle.innerText = "Gestiune: " + category.charAt(0).toUpperCase() + category.slice(1);
             } else {
@@ -409,12 +401,10 @@
             }
 
         } else {
-            // Daca nu e niciun link, incarcam Home
             loadHome();
         }
     });
 
-    // Ascultam butonul de Back/Forward din browser
     window.addEventListener('popstate', (event) => {
         const urlParams = new URLSearchParams(window.location.search);
         const page = urlParams.get('page');
