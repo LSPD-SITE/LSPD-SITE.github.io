@@ -28,8 +28,6 @@
         pointer-events: none;
         opacity: 0; 
         transition: opacity 0.6s ease;
-        /* Un mic blur peste canvas pentru a face luminile mai difuze */
-        filter: blur(4px);
     }
 
     .app{ width:100%; height:100vh; display:flex; overflow: hidden; position: relative; z-index: 2; }
@@ -202,93 +200,98 @@
     
     let currentCategory = ''; 
 
-    // --- SCRIPT ANIMATIE GIROFARE ABSTRACTE (PERFORMANT) ---
+    // --- SCRIPT ANIMATIE HEXAGOANE (CU GLOW) ---
     const ctx = bgCanvas.getContext('2d');
     let width, height;
-    let lights = [];
+    let hexagons = [];
     const mouse = { x: -9999, y: -9999 };
-    const interactionRadius = 250; // Raza mare de interactiune
+
+    const hexRadius = 35; 
+    const hexGap = 90; 
+    const interactionRadius = 180;
+    const pushStrength = 2;
 
     function resize() {
         width = window.innerWidth;
         height = window.innerHeight;
         bgCanvas.width = width;
         bgCanvas.height = height;
-        initLights();
+        initHexagons();
     }
 
-    class SirenLight {
-        constructor() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 0.3; // Miscare foarte lenta
-            this.vy = (Math.random() - 0.5) * 0.3;
-            this.radius = Math.random() * 30 + 15; // Marime variata
-            
-            // Culoare: Rosu sau Albastru
-            this.isRed = Math.random() > 0.5;
-            
-            this.baseAlpha = 0.05; // Foarte sters normal
-            this.alpha = this.baseAlpha;
+    class Hexagon {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.originX = x;
+            this.originY = y;
+            this.vx = 0;
+            this.vy = 0;
         }
 
         update() {
-            // Miscare continua
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Wrap around screen (daca iese, intra prin partea cealalta)
-            if(this.x < -this.radius) this.x = width + this.radius;
-            if(this.x > width + this.radius) this.x = -this.radius;
-            if(this.y < -this.radius) this.y = height + this.radius;
-            if(this.y > height + this.radius) this.y = -this.radius;
-
-            // Interactiune Mouse
             const dx = mouse.x - this.x;
             const dy = mouse.y - this.y;
             const distance = Math.sqrt(dx*dx + dy*dy);
-
+            
             if(distance < interactionRadius) {
-                // Aprinde lumina cand e mouse-ul aproape
-                if(this.alpha < 0.6) this.alpha += 0.02;
-            } else {
-                // Stinge lumina inapoi la normal
-                if(this.alpha > this.baseAlpha) this.alpha -= 0.01;
+                const angle = Math.atan2(dy, dx);
+                const force = (interactionRadius - distance) / interactionRadius;
+                this.vx -= Math.cos(angle) * force * pushStrength;
+                this.vy -= Math.sin(angle) * force * pushStrength;
             }
+
+            const returnX = this.originX - this.x;
+            const returnY = this.originY - this.y;
+            this.vx += returnX * 0.05;
+            this.vy += returnY * 0.05;
+            this.vx *= 0.9;
+            this.vy *= 0.9;
+            this.x += this.vx;
+            this.y += this.vy;
         }
 
         draw() {
-            // Folosim gradient radial pentru efect de lumina performant
-            const colorStr = this.isRed ? `239, 68, 68` : `59, 130, 246`; // Culori RGB
-            
-            const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 2);
-            gradient.addColorStop(0, `rgba(${colorStr}, ${this.alpha})`); // Centru luminos
-            gradient.addColorStop(1, `rgba(${colorStr}, 0)`); // Margine transparenta
+            ctx.save();
+            // Efect de GLOW
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "rgba(59, 130, 246, 0.5)";
 
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.fill();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const x_i = this.x + hexRadius * Math.cos(angle);
+                const y_i = this.y + hexRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x_i, y_i);
+                else ctx.lineTo(x_i, y_i);
+            }
+            ctx.closePath();
+            
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; 
+            ctx.stroke();
+            ctx.restore();
         }
     }
 
-    function initLights() {
-        lights = [];
-        const numberOfLights = Math.floor((width * height) / 25000); // Numar dinamic in functie de ecran
-        for (let i = 0; i < numberOfLights; i++) {
-            lights.push(new SirenLight());
+    function initHexagons() {
+        hexagons = [];
+        let row = 0;
+        for (let y = 0; y < height + hexRadius; y += hexGap * 0.85) {
+            const offset = (row % 2 === 0) ? 0 : hexGap / 2;
+            for (let x = -hexRadius; x < width + hexRadius; x += hexGap) {
+                hexagons.push(new Hexagon(x + offset, y));
+            }
+            row++;
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        // Folosim "lighter" pentru ca luminile sa se combine frumos cand se suprapun
-        ctx.globalCompositeOperation = 'lighter'; 
-        lights.forEach(light => {
-            light.update();
-            light.draw();
+        hexagons.forEach(h => {
+            h.update();
+            h.draw();
         });
-        ctx.globalCompositeOperation = 'source-over'; // Reset
         requestAnimationFrame(animate);
     }
 
@@ -320,7 +323,8 @@
         resetActiveButtons();
     }
 
-    async function loadHTML(filename) {
+    // --- FUNCTIA NOUA CU ROUTING (URL UNIQUE) ---
+    async function loadHTML(filename, updateHistory = true) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
       // LOGICA VIZIBILITATE FUNDAL
@@ -328,6 +332,12 @@
           bgCanvas.style.opacity = '0';
       } else {
           bgCanvas.style.opacity = '1';
+      }
+
+      // ROUTING: Actualizam URL-ul in browser
+      if (updateHistory) {
+          const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + filename;
+          window.history.pushState({path: newUrl}, '', newUrl);
       }
 
       try {
@@ -372,8 +382,49 @@
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
     }
 
-    // Initializare
-    loadHome();
+    // --- INITIALIZARE CU VERIFICARE URL ---
+    window.addEventListener('load', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = urlParams.get('page');
+
+        if (page) {
+            // Daca avem ?page=ceva in link, incarcam pagina aia
+            loadHTML(page, false);
+            
+            // Logica pentru a seta titlurile si meniurile active corect la refresh
+            if(page.startsWith('cap')) {
+                pageTitle.innerText = "Cod Penal";
+                if (!sidebar.classList.contains('open')) sidebar.classList.add('open');
+                codPenalSubmenu.classList.add('open');
+            } else if (page === 'selectie_grade') {
+                 // E greu de stiut categoria doar din 'selectie_grade', dar lasam generic
+                 pageTitle.innerText = "Gestiune Resurse";
+            } else if (page.includes('_')) {
+                 // Daca e o pagina de grad (ex: uniforme_cadet)
+                 const category = page.split('_')[0]; // 'uniforme'
+                 currentCategory = category;
+                 pageTitle.innerText = "Gestiune: " + category.charAt(0).toUpperCase() + category.slice(1);
+            } else {
+                 pageTitle.innerText = "Vision Police Departament";
+            }
+
+        } else {
+            // Daca nu e niciun link, incarcam Home
+            loadHome();
+        }
+    });
+
+    // Ascultam butonul de Back/Forward din browser
+    window.addEventListener('popstate', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = urlParams.get('page');
+        if (page) {
+            loadHTML(page, false);
+        } else {
+            loadHome();
+        }
+    });
+
   </script>
 </body>
 </html>
