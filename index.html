@@ -28,6 +28,8 @@
         pointer-events: none;
         opacity: 0; 
         transition: opacity 0.6s ease;
+        /* Default fara blur pentru claritate */
+        filter: none;
     }
 
     .app{ width:100%; height:100vh; display:flex; overflow: hidden; position: relative; z-index: 2; }
@@ -96,14 +98,14 @@
     .footer-info { padding: 20px; font-size: 11px; color: var(--muted); text-align: center; opacity: 0; transition: 0.3s; white-space: nowrap; }
     .sidebar.open .footer-info { opacity: 1; }
 
-    /* CONTENT MAIN */
+    /* CONTENT MAIN - Mai transparent pentru a vedea fundalul */
     .main { 
         flex: 1; 
-        background: rgba(17, 24, 39, 0.85); 
+        background: rgba(13, 20, 35, 0.85); 
         padding: 40px; 
         overflow-y: auto; 
         position: relative; 
-        backdrop-filter: blur(2px); 
+        backdrop-filter: blur(3px); 
     }
     
     .header { margin-bottom: 25px; border-bottom: 1px solid var(--outline); padding-bottom: 15px; }
@@ -194,17 +196,25 @@
         height = window.innerHeight;
         bgCanvas.width = width;
         bgCanvas.height = height;
-        initParticles();
+        // Re-initializam particulele cand se schimba rezolutia
+        if (currentEffect === 'masini') {
+             initCars();
+        } else {
+             initParticles();
+        }
     }
 
+    // Clasa pentru obiecte standard (Uniforme, Arme, Home)
     class Particle {
         constructor() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = (Math.random() - 0.5) * 0.5;
-            this.size = Math.random() * 20 + 10;
-            this.alpha = 0.1; 
+            this.vx = (Math.random() - 0.5) * 0.4;
+            this.vy = (Math.random() - 0.5) * 0.4;
+            this.size = Math.random() * 20 + 15;
+            // Baza de opacitate mult mai mare pentru vizibilitate
+            this.baseAlpha = 0.35; 
+            this.alpha = this.baseAlpha;
             this.type = Math.random() > 0.5; // Pentru culori rosu/albastru la Home
         }
 
@@ -212,82 +222,118 @@
             this.x += this.vx;
             this.y += this.vy;
 
-            // Wrap around
             if(this.x < -50) this.x = width + 50;
             if(this.x > width + 50) this.x = -50;
             if(this.y < -50) this.y = height + 50;
             if(this.y > height + 50) this.y = -50;
 
-            // Interactiune Mouse
             const dx = mouse.x - this.x;
             const dy = mouse.y - this.y;
             const distance = Math.sqrt(dx*dx + dy*dy);
 
+            // Interactiune mai puternica la mouse
             if(distance < interactionRadius) {
-                if(this.alpha < 0.6) this.alpha += 0.02;
+                if(this.alpha < 0.9) this.alpha += 0.03;
             } else {
-                if(this.alpha > 0.1) this.alpha -= 0.01;
+                if(this.alpha > this.baseAlpha) this.alpha -= 0.01;
             }
         }
 
         draw() {
             ctx.globalAlpha = this.alpha;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#3b82f6'; // Default albastru
-            ctx.fillStyle = '#3b82f6';
 
             if (currentEffect === 'home') {
-                // GIROFARE (Cercuri blurate)
-                const color = this.type ? '#ef4444' : '#3b82f6'; // Rosu/Albastru
+                // GIROFARE (Blured circles)
+                const color = this.type ? '#ef4444' : '#3b82f6';
                 const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
                 gradient.addColorStop(0, color);
                 gradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
 
             } else if (currentEffect === 'uniforme') {
-                // GRADE / CHEVRONS (V-uri)
-                ctx.strokeStyle = '#cbd5e1'; // Argintiu
+                // GRADE (V-uri albe clare)
+                ctx.strokeStyle = '#ffffff'; 
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                // Desenam un V
-                ctx.moveTo(this.x - 10, this.y - 5);
-                ctx.lineTo(this.x, this.y + 5);
-                ctx.lineTo(this.x + 10, this.y - 5);
+                ctx.moveTo(this.x - 12, this.y - 7);
+                ctx.lineTo(this.x, this.y + 7);
+                ctx.lineTo(this.x + 12, this.y - 7);
                 ctx.stroke();
 
             } else if (currentEffect === 'arme') {
-                // TINTE (Crosshairs)
-                ctx.strokeStyle = '#ef4444'; // Rosu tactic
+                // TINTE (Crosshairs rosii clare)
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                // Cerc
-                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
-                // Linii cruce
-                ctx.moveTo(this.x, this.y - 14); ctx.lineTo(this.x, this.y + 14);
-                ctx.moveTo(this.x - 14, this.y); ctx.lineTo(this.x + 14, this.y);
-                ctx.stroke();
-
-            } else if (currentEffect === 'masini') {
-                // ROTI / VOLANE
-                ctx.strokeStyle = '#fbbf24'; // Galben/Auriu
-                ctx.beginPath();
-                // Cerc exterior
                 ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
-                // Punct interior
-                ctx.moveTo(this.x + 2, this.y); ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.moveTo(this.x, this.y - 16); ctx.lineTo(this.x, this.y + 16);
+                ctx.moveTo(this.x - 16, this.y); ctx.lineTo(this.x + 16, this.y);
                 ctx.stroke();
             }
             
-            ctx.globalAlpha = 1; // Reset alpha
+            ctx.globalAlpha = 1;
         }
     }
 
+    // Clasa Speciala pentru Masini de Politie
+    class PoliceCar {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            // Viteza mai mare pentru masini
+            this.vx = (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 1 + 0.5); 
+            this.vy = (Math.random() * 0.5 - 0.25); 
+            this.angle = Math.atan2(this.vy, this.vx); // Directia masinii
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if(this.x < -50) this.x = width + 50;
+            if(this.x > width + 50) this.x = -50;
+            if(this.y < -50) this.y = height + 50;
+            if(this.y > height + 50) this.y = -50;
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // Corpul masinii (vazut de sus - dreptunghi)
+            ctx.fillStyle = '#1e293b'; // Albastru inchis metalic
+            ctx.fillRect(-15, -8, 30, 16);
+
+            // Pulsul girofarului (folosim timpul pentru a pulsa automat)
+            const pulse = (Math.sin(Date.now() / 150) + 1) / 2; // Valoare intre 0 si 1 rapid
+
+            // Girofar Rosu (stanga)
+            ctx.fillStyle = `rgba(239, 68, 68, ${pulse * 0.7 + 0.3})`;
+            ctx.beginPath(); ctx.arc(-5, 0, 5, 0, Math.PI*2); ctx.fill();
+
+            // Girofar Albastru (dreapta - pulsa invers)
+            ctx.fillStyle = `rgba(59, 130, 246, ${(1-pulse) * 0.7 + 0.3})`;
+            ctx.beginPath(); ctx.arc(5, 0, 5, 0, Math.PI*2); ctx.fill();
+
+            ctx.restore();
+        }
+    }
+
+
     function initParticles() {
         particles = [];
-        const count = 40; // Numar mic pt performanta
+        const count = 35; 
         for (let i = 0; i < count; i++) {
             particles.push(new Particle());
+        }
+    }
+
+    function initCars() {
+        particles = [];
+        const count = 20; // Mai putine masini
+        for (let i = 0; i < count; i++) {
+            particles.push(new PoliceCar());
         }
     }
 
@@ -306,6 +352,7 @@
         mouse.y = e.clientY;
     });
 
+    // Initializare default
     resize();
     animate();
     // -----------------------------------------------------------
@@ -320,45 +367,57 @@
         }
     }
 
-    // --- FUNCTII NAVIGARE ---
+    // --- FUNCTII NAVIGARE SI SCHIMBARE EFECT ---
 
     async function loadHTML(urlIdentifier, updateHistory = true) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
       let realFile = urlIdentifier;
 
-      // SETARE EFECT BACKGROUND IN FUNCTIE DE PAGINA
+      // 1. DETERMINAM EFECTUL VIZUAL SI SCHIMBAM PARTICULELE
+      let newEffect = 'home';
+      let applyBlur = true;
+
       if(urlIdentifier === 'home_vpd') {
-          currentEffect = 'home';
-          bgCanvas.style.opacity = '1';
-          bgCanvas.style.filter = 'blur(4px)'; // Blur pt girofare
+          newEffect = 'home';
       } 
       else if (urlIdentifier.includes('uniforme')) {
-          currentEffect = 'uniforme';
-          bgCanvas.style.opacity = '1';
-          bgCanvas.style.filter = 'none'; // Clar pt obiecte
+          newEffect = 'uniforme';
+          applyBlur = false;
       }
       else if (urlIdentifier.includes('arme')) {
-          currentEffect = 'arme';
-          bgCanvas.style.opacity = '1';
-          bgCanvas.style.filter = 'none';
+          newEffect = 'arme';
+          applyBlur = false;
       }
       else if (urlIdentifier.includes('masini')) {
-          currentEffect = 'masini';
-          bgCanvas.style.opacity = '1';
-          bgCanvas.style.filter = 'none';
+          newEffect = 'masini';
+          applyBlur = false;
       }
       else if (urlIdentifier.startsWith('cap') || urlIdentifier === 'cod_penal') {
-          // Ascundem pe cod penal
-          bgCanvas.style.opacity = '0';
-      } 
-      else {
-          // Default fallback
-          currentEffect = 'home';
-          bgCanvas.style.opacity = '1';
+          newEffect = 'hidden'; // Ascundem
       }
 
-      // Mapare URL logic -> Fisier real
+      // Daca efectul s-a schimbat, reinitializam particulele
+      if (newEffect !== currentEffect) {
+          currentEffect = newEffect;
+          if (currentEffect === 'hidden') {
+               bgCanvas.style.opacity = '0';
+          } else {
+               bgCanvas.style.opacity = '1';
+               // Aplicam blur doar la Home (girofare)
+               bgCanvas.style.filter = applyBlur ? 'blur(4px)' : 'none';
+               
+               // Initializam tipul corect de obiecte
+               if (currentEffect === 'masini') {
+                   initCars();
+               } else {
+                   initParticles();
+               }
+          }
+      }
+
+
+      // 2. MAPARE URL LOGIC -> FISIER REAL
       if(urlIdentifier.startsWith('selectie_grade_')) {
           realFile = 'selectie_grade'; 
       }
