@@ -28,7 +28,6 @@
         pointer-events: none;
         opacity: 0; 
         transition: opacity 0.6s ease;
-        /* Default fara blur pentru claritate */
         filter: none;
     }
 
@@ -95,10 +94,34 @@
     .menu-btn.active-category { background: rgba(59, 130, 246, 0.15); color: var(--highlight); }
     .menu-icon { font-size: 18px; width: 24px; text-align: center; }
 
+    .submenu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; margin-left: 10px; border-left: 2px solid var(--outline); }
+    .submenu.open { max-height: 800px; }
+
+    /* Stiluri Badge IN LUCRU */
+    .wip-badge {
+        font-size: 9px;
+        background: #f59e0b; /* Portocaliu */
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-left: auto; /* Impinge badge-ul in dreapta */
+    }
+
+    .sub-btn { 
+        width: 100%; display: flex; align-items: center; 
+        padding: 10px 15px; color: var(--muted); background: transparent; 
+        border: none; text-align: left; font-size: 13px; font-weight: 500; 
+        cursor: pointer; transition: 0.2s; 
+    }
+    .sub-btn:hover { color: #fff; padding-left: 20px; }
+    .sub-btn.active { color: var(--highlight); font-weight: 700; border-left: 2px solid var(--highlight); margin-left: -2px; }
+
     .footer-info { padding: 20px; font-size: 11px; color: var(--muted); text-align: center; opacity: 0; transition: 0.3s; white-space: nowrap; }
     .sidebar.open .footer-info { opacity: 1; }
 
-    /* CONTENT MAIN - Mai transparent pentru a vedea fundalul */
+    /* CONTENT MAIN */
     .main { 
         flex: 1; 
         background: rgba(13, 20, 35, 0.85); 
@@ -155,6 +178,24 @@
           <span class="menu-icon">⚖️</span> Cod Penal
         </button>
 
+        <button class="menu-btn" onclick="toggleGhid()">
+          <span class="menu-icon">📘</span> Ghid
+        </button>
+        <div class="submenu" id="ghidSubmenu">
+           <button class="sub-btn" onclick="loadGhid('proceduri', this)">
+               <span>Proceduri Generale</span>
+               <span class="wip-badge">WIP</span>
+           </button>
+           <button class="sub-btn" onclick="loadGhid('radio', this)">
+               <span>Radio</span>
+               <span class="wip-badge">WIP</span>
+           </button>
+           <button class="sub-btn" onclick="loadGhid('mdt', this)">
+               <span>MDT</span>
+               <span class="wip-badge">WIP</span>
+           </button>
+        </div>
+
         <button class="menu-btn" onclick="loadResource('Uniforme', this)">
           <span class="menu-icon">👕</span> Uniforme
         </button>
@@ -180,9 +221,10 @@
     const pageTitle = document.getElementById('pageTitle');
     const sidebar = document.getElementById('sidebar');
     const bgCanvas = document.getElementById('bgCanvas');
+    const ghidSubmenu = document.getElementById('ghidSubmenu'); 
     
     let currentCategory = ''; 
-    let currentEffect = 'home'; // home, uniforme, arme, masini
+    let currentEffect = 'home'; 
 
     // --- SCRIPT BACKGROUND DINAMIC ---
     const ctx = bgCanvas.getContext('2d');
@@ -196,7 +238,6 @@
         height = window.innerHeight;
         bgCanvas.width = width;
         bgCanvas.height = height;
-        // Re-initializam particulele cand se schimba rezolutia
         if (currentEffect === 'masini') {
              initCars();
         } else {
@@ -204,7 +245,6 @@
         }
     }
 
-    // Clasa pentru obiecte standard (Uniforme, Arme, Home)
     class Particle {
         constructor() {
             this.x = Math.random() * width;
@@ -212,16 +252,14 @@
             this.vx = (Math.random() - 0.5) * 0.4;
             this.vy = (Math.random() - 0.5) * 0.4;
             this.size = Math.random() * 20 + 15;
-            // Baza de opacitate mult mai mare pentru vizibilitate
             this.baseAlpha = 0.35; 
             this.alpha = this.baseAlpha;
-            this.type = Math.random() > 0.5; // Pentru culori rosu/albastru la Home
+            this.type = Math.random() > 0.5; 
         }
 
         update() {
             this.x += this.vx;
             this.y += this.vy;
-
             if(this.x < -50) this.x = width + 50;
             if(this.x > width + 50) this.x = -50;
             if(this.y < -50) this.y = height + 50;
@@ -231,7 +269,6 @@
             const dy = mouse.y - this.y;
             const distance = Math.sqrt(dx*dx + dy*dy);
 
-            // Interactiune mai puternica la mouse
             if(distance < interactionRadius) {
                 if(this.alpha < 0.9) this.alpha += 0.03;
             } else {
@@ -243,7 +280,6 @@
             ctx.globalAlpha = this.alpha;
 
             if (currentEffect === 'home') {
-                // GIROFARE (Blured circles)
                 const color = this.type ? '#ef4444' : '#3b82f6';
                 const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
                 gradient.addColorStop(0, color);
@@ -252,7 +288,6 @@
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
 
             } else if (currentEffect === 'uniforme') {
-                // GRADE (V-uri albe clare)
                 ctx.strokeStyle = '#ffffff'; 
                 ctx.lineWidth = 3;
                 ctx.beginPath();
@@ -262,7 +297,6 @@
                 ctx.stroke();
 
             } else if (currentEffect === 'arme') {
-                // TINTE (Crosshairs rosii clare)
                 ctx.strokeStyle = '#ef4444';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -276,15 +310,13 @@
         }
     }
 
-    // Clasa Speciala pentru Masini de Politie
     class PoliceCar {
         constructor() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            // Viteza mai mare pentru masini
             this.vx = (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 1 + 0.5); 
             this.vy = (Math.random() * 0.5 - 0.25); 
-            this.angle = Math.atan2(this.vy, this.vx); // Directia masinii
+            this.angle = Math.atan2(this.vy, this.vx); 
         }
 
         update() {
@@ -300,22 +332,13 @@
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
-
-            // Corpul masinii (vazut de sus - dreptunghi)
-            ctx.fillStyle = '#1e293b'; // Albastru inchis metalic
+            ctx.fillStyle = '#1e293b'; 
             ctx.fillRect(-15, -8, 30, 16);
-
-            // Pulsul girofarului (folosim timpul pentru a pulsa automat)
-            const pulse = (Math.sin(Date.now() / 150) + 1) / 2; // Valoare intre 0 si 1 rapid
-
-            // Girofar Rosu (stanga)
+            const pulse = (Math.sin(Date.now() / 150) + 1) / 2; 
             ctx.fillStyle = `rgba(239, 68, 68, ${pulse * 0.7 + 0.3})`;
             ctx.beginPath(); ctx.arc(-5, 0, 5, 0, Math.PI*2); ctx.fill();
-
-            // Girofar Albastru (dreapta - pulsa invers)
             ctx.fillStyle = `rgba(59, 130, 246, ${(1-pulse) * 0.7 + 0.3})`;
             ctx.beginPath(); ctx.arc(5, 0, 5, 0, Math.PI*2); ctx.fill();
-
             ctx.restore();
         }
     }
@@ -331,7 +354,7 @@
 
     function initCars() {
         particles = [];
-        const count = 20; // Mai putine masini
+        const count = 20; 
         for (let i = 0; i < count; i++) {
             particles.push(new PoliceCar());
         }
@@ -352,7 +375,6 @@
         mouse.y = e.clientY;
     });
 
-    // Initializare default
     resize();
     animate();
     // -----------------------------------------------------------
@@ -367,14 +389,22 @@
         }
     }
 
-    // --- FUNCTII NAVIGARE SI SCHIMBARE EFECT ---
+    // --- FUNCTIE TOGGLE GHID ---
+    function toggleGhid() {
+        if (!sidebar.classList.contains('open')) {
+            sidebar.classList.add('open');
+        }
+        ghidSubmenu.classList.toggle('open');
+    }
+
+    // --- FUNCTII NAVIGARE ---
 
     async function loadHTML(urlIdentifier, updateHistory = true) {
       contentArea.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center">Se încarcă...</div>';
       
       let realFile = urlIdentifier;
 
-      // 1. DETERMINAM EFECTUL VIZUAL SI SCHIMBAM PARTICULELE
+      // SETARE EFECT BACKGROUND
       let newEffect = 'home';
       let applyBlur = true;
 
@@ -393,21 +423,19 @@
           newEffect = 'masini';
           applyBlur = false;
       }
-      else if (urlIdentifier.startsWith('cap') || urlIdentifier === 'cod_penal') {
-          newEffect = 'hidden'; // Ascundem
+      // Ascundem la text greu (Cod Penal sau Ghiduri)
+      else if (urlIdentifier.startsWith('cap') || urlIdentifier === 'cod_penal' || urlIdentifier.startsWith('ghid_')) {
+          newEffect = 'hidden'; 
       }
 
-      // Daca efectul s-a schimbat, reinitializam particulele
       if (newEffect !== currentEffect) {
           currentEffect = newEffect;
           if (currentEffect === 'hidden') {
                bgCanvas.style.opacity = '0';
           } else {
                bgCanvas.style.opacity = '1';
-               // Aplicam blur doar la Home (girofare)
                bgCanvas.style.filter = applyBlur ? 'blur(4px)' : 'none';
                
-               // Initializam tipul corect de obiecte
                if (currentEffect === 'masini') {
                    initCars();
                } else {
@@ -416,8 +444,7 @@
           }
       }
 
-
-      // 2. MAPARE URL LOGIC -> FISIER REAL
+      // Mapare URL logic -> Fisier real
       if(urlIdentifier.startsWith('selectie_grade_')) {
           realFile = 'selectie_grade'; 
       }
@@ -452,6 +479,22 @@
         loadHTML('cod_penal');
     }
 
+    function loadGhid(type, btnElement) {
+        // Functie pentru paginile din Ghid
+        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+        if(btnElement) btnElement.classList.add('active');
+        
+        // Seteaza titlul
+        const titleMap = {
+            'proceduri': 'Proceduri Generale',
+            'radio': 'Coduri Radio',
+            'mdt': 'Utilizare MDT'
+        };
+        pageTitle.innerText = "Ghid: " + (titleMap[type] || 'Informații');
+        
+        loadHTML('ghid_' + type);
+    }
+
     function loadChapter(capKey) {
         pageTitle.innerText = "Cod Penal: " + capKey.toUpperCase();
         loadHTML(capKey);
@@ -472,6 +515,7 @@
 
     function resetActiveButtons() {
         document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active-category'));
+        // Nu resetam sub-butoanele daca nu e cazul
     }
 
     // --- INITIALIZARE ---
@@ -480,6 +524,7 @@
         const page = urlParams.get('page');
 
         if (page) {
+            // Logica Refacere UI la Refresh
             if(page.startsWith('selectie_grade_')) {
                 const parts = page.split('_'); 
                 if(parts.length >= 3) {
@@ -490,12 +535,16 @@
                  pageTitle.innerText = "Cod Penal - Capitole";
             } else if(page.startsWith('cap')) {
                  pageTitle.innerText = "Cod Penal: " + page.toUpperCase();
+            } else if(page.startsWith('ghid_')) {
+                 // Deschide meniul ghid daca e cazul
+                 if (!sidebar.classList.contains('open')) sidebar.classList.add('open');
+                 ghidSubmenu.classList.add('open');
+                 pageTitle.innerText = "Ghid Operativ";
             } else if(page.includes('_')) {
                  const category = page.split('_')[0];
                  currentCategory = category;
                  pageTitle.innerText = "Gestiune: " + category.charAt(0).toUpperCase() + category.slice(1);
             } 
-
             loadHTML(page, false);
         } else {
             loadHome();
@@ -506,12 +555,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const page = urlParams.get('page');
         if (page) {
-             if(page.startsWith('selectie_grade_')) {
-                const parts = page.split('_'); 
-                if(parts.length >= 3) currentCategory = parts[2];
-            } else if(page.includes('_') && !page.startsWith('selectie')) {
-                 currentCategory = page.split('_')[0];
-            }
             loadHTML(page, false);
         } else {
             loadHome();
