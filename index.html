@@ -180,93 +180,122 @@
     const bgCanvas = document.getElementById('bgCanvas');
     
     let currentCategory = ''; 
+    let currentEffect = 'home'; // home, uniforme, arme, masini
 
-    // --- SCRIPT HEXAGOANE OPTIMIZAT ---
+    // --- SCRIPT BACKGROUND DINAMIC ---
     const ctx = bgCanvas.getContext('2d');
     let width, height;
-    let hexagons = [];
+    let particles = [];
     const mouse = { x: -9999, y: -9999 };
-
-    const hexRadius = 40; 
-    const hexGap = 120; 
-    const interactionRadius = 150;
-    const pushStrength = 2;
+    const interactionRadius = 200;
 
     function resize() {
         width = window.innerWidth;
         height = window.innerHeight;
         bgCanvas.width = width;
         bgCanvas.height = height;
-        initHexagons();
+        initParticles();
     }
 
-    class Hexagon {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.originX = x;
-            this.originY = y;
-            this.vx = 0;
-            this.vy = 0;
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.size = Math.random() * 20 + 10;
+            this.alpha = 0.1; 
+            this.type = Math.random() > 0.5; // Pentru culori rosu/albastru la Home
         }
 
         update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Wrap around
+            if(this.x < -50) this.x = width + 50;
+            if(this.x > width + 50) this.x = -50;
+            if(this.y < -50) this.y = height + 50;
+            if(this.y > height + 50) this.y = -50;
+
+            // Interactiune Mouse
             const dx = mouse.x - this.x;
             const dy = mouse.y - this.y;
             const distance = Math.sqrt(dx*dx + dy*dy);
-            
-            if(distance < interactionRadius) {
-                const angle = Math.atan2(dy, dx);
-                const force = (interactionRadius - distance) / interactionRadius;
-                this.vx -= Math.cos(angle) * force * pushStrength;
-                this.vy -= Math.sin(angle) * force * pushStrength;
-            }
 
-            const returnX = this.originX - this.x;
-            const returnY = this.originY - this.y;
-            this.vx += returnX * 0.05;
-            this.vy += returnY * 0.05;
-            this.vx *= 0.9;
-            this.vy *= 0.9;
-            this.x += this.vx;
-            this.y += this.vy;
+            if(distance < interactionRadius) {
+                if(this.alpha < 0.6) this.alpha += 0.02;
+            } else {
+                if(this.alpha > 0.1) this.alpha -= 0.01;
+            }
         }
 
         draw() {
-            ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = 2 * Math.PI / 6 * i;
-                const x_i = this.x + hexRadius * Math.cos(angle);
-                const y_i = this.y + hexRadius * Math.sin(angle);
-                if (i === 0) ctx.moveTo(x_i, y_i);
-                else ctx.lineTo(x_i, y_i);
+            ctx.globalAlpha = this.alpha;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#3b82f6'; // Default albastru
+            ctx.fillStyle = '#3b82f6';
+
+            if (currentEffect === 'home') {
+                // GIROFARE (Cercuri blurate)
+                const color = this.type ? '#ef4444' : '#3b82f6'; // Rosu/Albastru
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (currentEffect === 'uniforme') {
+                // GRADE / CHEVRONS (V-uri)
+                ctx.strokeStyle = '#cbd5e1'; // Argintiu
+                ctx.beginPath();
+                // Desenam un V
+                ctx.moveTo(this.x - 10, this.y - 5);
+                ctx.lineTo(this.x, this.y + 5);
+                ctx.lineTo(this.x + 10, this.y - 5);
+                ctx.stroke();
+
+            } else if (currentEffect === 'arme') {
+                // TINTE (Crosshairs)
+                ctx.strokeStyle = '#ef4444'; // Rosu tactic
+                ctx.beginPath();
+                // Cerc
+                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                // Linii cruce
+                ctx.moveTo(this.x, this.y - 14); ctx.lineTo(this.x, this.y + 14);
+                ctx.moveTo(this.x - 14, this.y); ctx.lineTo(this.x + 14, this.y);
+                ctx.stroke();
+
+            } else if (currentEffect === 'masini') {
+                // ROTI / VOLANE
+                ctx.strokeStyle = '#fbbf24'; // Galben/Auriu
+                ctx.beginPath();
+                // Cerc exterior
+                ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
+                // Punct interior
+                ctx.moveTo(this.x + 2, this.y); ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.stroke();
             }
-            ctx.closePath();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; 
-            ctx.stroke();
-            ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
-            ctx.fill();
+            
+            ctx.globalAlpha = 1; // Reset alpha
         }
     }
 
-    function initHexagons() {
-        hexagons = [];
-        let row = 0;
-        for (let y = 0; y < height + hexRadius; y += hexGap * 0.85) {
-            const offset = (row % 2 === 0) ? 0 : hexGap / 2;
-            for (let x = -hexRadius; x < width + hexRadius; x += hexGap) {
-                hexagons.push(new Hexagon(x + offset, y));
-            }
-            row++;
+    function initParticles() {
+        particles = [];
+        const count = 40; // Numar mic pt performanta
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle());
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        hexagons.forEach(h => {
-            h.update();
-            h.draw();
+        particles.forEach(p => {
+            p.update();
+            p.draw();
         });
         requestAnimationFrame(animate);
     }
@@ -298,19 +327,43 @@
       
       let realFile = urlIdentifier;
 
+      // SETARE EFECT BACKGROUND IN FUNCTIE DE PAGINA
+      if(urlIdentifier === 'home_vpd') {
+          currentEffect = 'home';
+          bgCanvas.style.opacity = '1';
+          bgCanvas.style.filter = 'blur(4px)'; // Blur pt girofare
+      } 
+      else if (urlIdentifier.includes('uniforme')) {
+          currentEffect = 'uniforme';
+          bgCanvas.style.opacity = '1';
+          bgCanvas.style.filter = 'none'; // Clar pt obiecte
+      }
+      else if (urlIdentifier.includes('arme')) {
+          currentEffect = 'arme';
+          bgCanvas.style.opacity = '1';
+          bgCanvas.style.filter = 'none';
+      }
+      else if (urlIdentifier.includes('masini')) {
+          currentEffect = 'masini';
+          bgCanvas.style.opacity = '1';
+          bgCanvas.style.filter = 'none';
+      }
+      else if (urlIdentifier.startsWith('cap') || urlIdentifier === 'cod_penal') {
+          // Ascundem pe cod penal
+          bgCanvas.style.opacity = '0';
+      } 
+      else {
+          // Default fallback
+          currentEffect = 'home';
+          bgCanvas.style.opacity = '1';
+      }
+
       // Mapare URL logic -> Fisier real
       if(urlIdentifier.startsWith('selectie_grade_')) {
           realFile = 'selectie_grade'; 
       }
       if(urlIdentifier === 'cod_penal') {
-          realFile = 'cod_penal'; // Fisierul nou creat
-      }
-
-      // Vizibilitate Canvas: Ascundem doar cand citim efectiv un capitol
-      if(realFile.startsWith('cap')) {
-          bgCanvas.style.opacity = '0';
-      } else {
-          bgCanvas.style.opacity = '1';
+          realFile = 'cod_penal'; 
       }
 
       if (updateHistory) {
@@ -333,7 +386,6 @@
         loadHTML('home_vpd');
     }
 
-    // Functie noua pentru Dashboard-ul Cod Penal
     function loadCodPenalDashboard(btnElement) {
         resetActiveButtons();
         if(btnElement) btnElement.classList.add('active-category');
@@ -342,7 +394,6 @@
     }
 
     function loadChapter(capKey) {
-        // Cand dai click pe un card de capitol
         pageTitle.innerText = "Cod Penal: " + capKey.toUpperCase();
         loadHTML(capKey);
     }
@@ -370,7 +421,6 @@
         const page = urlParams.get('page');
 
         if (page) {
-            // Refacem logica titlului la refresh
             if(page.startsWith('selectie_grade_')) {
                 const parts = page.split('_'); 
                 if(parts.length >= 3) {
@@ -397,7 +447,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const page = urlParams.get('page');
         if (page) {
-             // Aceeasi logica pentru butonul Back
              if(page.startsWith('selectie_grade_')) {
                 const parts = page.split('_'); 
                 if(parts.length >= 3) currentCategory = parts[2];
