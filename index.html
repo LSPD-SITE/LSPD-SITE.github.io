@@ -94,30 +94,6 @@
     .menu-btn.active-category { background: rgba(59, 130, 246, 0.15); color: var(--highlight); }
     .menu-icon { font-size: 18px; width: 24px; text-align: center; }
 
-    .submenu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; margin-left: 10px; border-left: 2px solid var(--outline); }
-    .submenu.open { max-height: 800px; }
-
-    /* Stiluri Badge IN LUCRU */
-    .wip-badge {
-        font-size: 9px;
-        background: #f59e0b; /* Portocaliu */
-        color: white;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-        margin-left: auto; /* Impinge badge-ul in dreapta */
-    }
-
-    .sub-btn { 
-        width: 100%; display: flex; align-items: center; 
-        padding: 10px 15px; color: var(--muted); background: transparent; 
-        border: none; text-align: left; font-size: 13px; font-weight: 500; 
-        cursor: pointer; transition: 0.2s; 
-    }
-    .sub-btn:hover { color: #fff; padding-left: 20px; }
-    .sub-btn.active { color: var(--highlight); font-weight: 700; border-left: 2px solid var(--highlight); margin-left: -2px; }
-
     .footer-info { padding: 20px; font-size: 11px; color: var(--muted); text-align: center; opacity: 0; transition: 0.3s; white-space: nowrap; }
     .sidebar.open .footer-info { opacity: 1; }
 
@@ -178,23 +154,9 @@
           <span class="menu-icon">⚖️</span> Cod Penal
         </button>
 
-        <button class="menu-btn" onclick="toggleGhid()">
+        <button class="menu-btn" onclick="loadGhidDashboard(this)">
           <span class="menu-icon">📘</span> Ghid
         </button>
-        <div class="submenu" id="ghidSubmenu">
-           <button class="sub-btn" onclick="loadGhid('proceduri', this)">
-               <span>Proceduri Generale</span>
-               <span class="wip-badge">WIP</span>
-           </button>
-           <button class="sub-btn" onclick="loadGhid('radio', this)">
-               <span>Radio</span>
-               <span class="wip-badge">WIP</span>
-           </button>
-           <button class="sub-btn" onclick="loadGhid('mdt', this)">
-               <span>MDT</span>
-               <span class="wip-badge">WIP</span>
-           </button>
-        </div>
 
         <button class="menu-btn" onclick="loadResource('Uniforme', this)">
           <span class="menu-icon">👕</span> Uniforme
@@ -221,7 +183,6 @@
     const pageTitle = document.getElementById('pageTitle');
     const sidebar = document.getElementById('sidebar');
     const bgCanvas = document.getElementById('bgCanvas');
-    const ghidSubmenu = document.getElementById('ghidSubmenu'); 
     
     let currentCategory = ''; 
     let currentEffect = 'home'; 
@@ -389,14 +350,6 @@
         }
     }
 
-    // --- FUNCTIE TOGGLE GHID ---
-    function toggleGhid() {
-        if (!sidebar.classList.contains('open')) {
-            sidebar.classList.add('open');
-        }
-        ghidSubmenu.classList.toggle('open');
-    }
-
     // --- FUNCTII NAVIGARE ---
 
     async function loadHTML(urlIdentifier, updateHistory = true) {
@@ -408,7 +361,7 @@
       let newEffect = 'home';
       let applyBlur = true;
 
-      if(urlIdentifier === 'home_vpd') {
+      if(urlIdentifier === 'home_vpd' || urlIdentifier === 'ghid_dashboard') {
           newEffect = 'home';
       } 
       else if (urlIdentifier.includes('uniforme')) {
@@ -423,7 +376,7 @@
           newEffect = 'masini';
           applyBlur = false;
       }
-      // Ascundem la text greu (Cod Penal sau Ghiduri)
+      // Ascundem la text greu (Cod Penal sau paginile text din Ghid)
       else if (urlIdentifier.startsWith('cap') || urlIdentifier === 'cod_penal' || urlIdentifier.startsWith('ghid_')) {
           newEffect = 'hidden'; 
       }
@@ -450,6 +403,9 @@
       }
       if(urlIdentifier === 'cod_penal') {
           realFile = 'cod_penal'; 
+      }
+      if(urlIdentifier === 'ghid_dashboard') {
+          realFile = 'ghid_dashboard'; 
       }
 
       if (updateHistory) {
@@ -479,19 +435,21 @@
         loadHTML('cod_penal');
     }
 
-    function loadGhid(type, btnElement) {
-        // Functie pentru paginile din Ghid
-        document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
-        if(btnElement) btnElement.classList.add('active');
-        
-        // Seteaza titlul
+    function loadGhidDashboard(btnElement) {
+        resetActiveButtons();
+        if(btnElement) btnElement.classList.add('active-category');
+        pageTitle.innerText = "Ghid Operativ";
+        loadHTML('ghid_dashboard');
+    }
+
+    function loadGhid(type) {
+        // Functie apelata de cardurile din Dashboard
         const titleMap = {
             'proceduri': 'Proceduri Generale',
             'radio': 'Coduri Radio',
             'mdt': 'Utilizare MDT'
         };
         pageTitle.innerText = "Ghid: " + (titleMap[type] || 'Informații');
-        
         loadHTML('ghid_' + type);
     }
 
@@ -515,7 +473,6 @@
 
     function resetActiveButtons() {
         document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active-category'));
-        // Nu resetam sub-butoanele daca nu e cazul
     }
 
     // --- INITIALIZARE ---
@@ -524,7 +481,6 @@
         const page = urlParams.get('page');
 
         if (page) {
-            // Logica Refacere UI la Refresh
             if(page.startsWith('selectie_grade_')) {
                 const parts = page.split('_'); 
                 if(parts.length >= 3) {
@@ -533,12 +489,11 @@
                 }
             } else if(page === 'cod_penal') {
                  pageTitle.innerText = "Cod Penal - Capitole";
+            } else if(page === 'ghid_dashboard') {
+                 pageTitle.innerText = "Ghid Operativ";
             } else if(page.startsWith('cap')) {
                  pageTitle.innerText = "Cod Penal: " + page.toUpperCase();
             } else if(page.startsWith('ghid_')) {
-                 // Deschide meniul ghid daca e cazul
-                 if (!sidebar.classList.contains('open')) sidebar.classList.add('open');
-                 ghidSubmenu.classList.add('open');
                  pageTitle.innerText = "Ghid Operativ";
             } else if(page.includes('_')) {
                  const category = page.split('_')[0];
