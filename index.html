@@ -35,31 +35,42 @@
     }
     .sidebar.open { width: var(--sidebar-open); overflow: hidden; }
 
-    /* LOGO REPARAT (FIX) */
+    /* --- LOGO CU PULS REPARAT --- */
     .brand {
         height: 80px; display: flex; align-items: center; padding: 0 14px;
         border-bottom: 1px solid transparent; transition: 0.3s; cursor: pointer; position: relative;
     }
     .sidebar.open .brand { border-color: var(--outline); }
     
+    @keyframes subtlePulse {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); }
+        70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
     .logo {
         width: 50px; 
         height: 50px; 
-        min-width: 50px; /* Fortam latimea minima */
+        min-width: 50px; /* Fortam marimea sa nu se strice */
         flex-shrink: 0; 
         display: flex; 
         align-items: center; 
         justify-content: center;
         transition: transform 0.2s; 
         border-radius: 50%;
-        overflow: hidden; /* Ascundem orice iese din cerc */
-        background: rgba(255,255,255,0.05); /* Fundal discret daca nu se incarca poza */
+        overflow: hidden; 
+        background: rgba(255,255,255,0.05);
+        /* AICI E PULSUL */
+        animation: subtlePulse 2s infinite;
     }
+    
+    .sidebar.open .logo { animation: none; } /* Oprim pulsul cand e meniul deschis ca sa nu distraga */
+
     .logo img { 
         width: 100%; 
         height: 100%; 
         object-fit: contain; 
-        max-width: 50px; /* Limita de siguranta */
+        max-width: 50px; 
         max-height: 50px;
     }
     
@@ -261,23 +272,15 @@
     function toggleSidebar() { sidebar.classList.toggle('open'); }
     function closeSidebarIfMobile() { if(window.innerWidth < 768) sidebar.classList.remove('open'); }
 
-    // --- TOAST FUNCTION (MODIFICATA PENTRU CULORI) ---
+    // --- TOAST FUNCTION ---
     function showToast(message, type = "normal") {
         toast.innerText = message;
-        // Resetam clasele
         toast.className = "";
-        
-        // Adaugam tipul (success/warning)
         if(type === "success") toast.classList.add("success");
         if(type === "warning") toast.classList.add("warning");
-        
-        // Afisam
-        void toast.offsetWidth; // Trigger reflow
+        void toast.offsetWidth; 
         toast.classList.add("show");
-        
-        setTimeout(() => { 
-            toast.classList.remove("show"); 
-        }, 5000); // 5 secunde
+        setTimeout(() => { toast.classList.remove("show"); }, 5000); 
     }
 
     // --- NAVIGATION ---
@@ -318,7 +321,6 @@
         if (!response.ok) throw new Error("Fișier lipsă");
         contentArea.innerHTML = await response.text();
         
-        // DACA E PAGINA DE PONTAJ, INITIALIZAM LOGICA
         if(urlIdentifier === 'pontaj') {
             initPontajLogic();
         }
@@ -336,7 +338,6 @@
     function loadGhid(type) { pageTitle.innerText = "Ghid: " + type.toUpperCase(); loadHTML('ghid_' + type); }
     function openRankPage(rank) { const fileName = `${currentCategory}_${rank}`; loadHTML(fileName); }
     
-    // Functie Buton Pontaj
     function loadPontaj(btn) {
         resetActiveButtons();
         if(btn) btn.classList.add('active-category');
@@ -346,24 +347,37 @@
 
     function resetActiveButtons() { document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active-category')); }
 
-    // --- LOGICA PONTAJ (CU NOTIFICARI PERSONALIZATE) ---
+    // --- LOGICA PONTAJ (CU ROTUNJIRE 5 MIN) ---
+    
+    function getRoundedDate() {
+        let d = new Date();
+        let coeff = 1000 * 60 * 5; // 5 minute
+        let rounded = new Date(Math.round(d.getTime() / coeff) * coeff);
+        return rounded;
+    }
+
+    function formatTime(dateObj) {
+        return dateObj.getHours().toString().padStart(2, '0') + ':' + dateObj.getMinutes().toString().padStart(2, '0');
+    }
+
     function initPontajLogic() {
         renderHistory();
         checkActiveSession();
     }
 
     function handleClockIn() {
-        const now = new Date();
-        const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        const roundedNow = getRoundedDate();
+        const timeString = formatTime(roundedNow);
         
+        // Salvam in local storage
         localStorage.setItem('vpd_status', 'active');
-        localStorage.setItem('vpd_startTime', now.getTime());
+        localStorage.setItem('vpd_startTime', roundedNow.getTime()); // Salvam timestamp rotunjit
         localStorage.setItem('vpd_startStr', timeString);
 
+        // Copiem in clipboard
         const copyText = `Clock-IN: ${timeString} / Clock-OUT:`;
         navigator.clipboard.writeText(copyText);
 
-        // AICI E MESAJUL DE START CERUT
         showToast("Ti-ai pornit pontajul, nu uita sa il copiezi pe camera de discord", "success");
         checkActiveSession();
     }
@@ -372,11 +386,12 @@
         const startTimestamp = localStorage.getItem('vpd_startTime');
         if(!startTimestamp) return;
 
-        const now = new Date();
-        const endString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        const roundedNow = getRoundedDate();
+        const endString = formatTime(roundedNow);
         const startString = localStorage.getItem('vpd_startStr');
 
-        const diffMs = now.getTime() - parseInt(startTimestamp);
+        // Calcul durata bazat pe valorile rotunjite
+        const diffMs = roundedNow.getTime() - parseInt(startTimestamp);
         const diffMins = Math.round(diffMs / 60000);
 
         const copyText = `Clock-IN: ${startString} / Clock-OUT: ${endString} (${diffMins} min)`;
@@ -397,7 +412,6 @@
         localStorage.removeItem('vpd_startTime');
         localStorage.removeItem('vpd_startStr');
 
-        // AICI E MESAJUL DE STOP CERUT
         showToast("Ai oprit pontajul nu uita sa modifici mesajul de pe discord", "warning");
         checkActiveSession();
         renderHistory();
