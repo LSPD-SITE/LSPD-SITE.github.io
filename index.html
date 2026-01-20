@@ -35,17 +35,36 @@
     }
     .sidebar.open { width: var(--sidebar-open); overflow: hidden; }
 
-    /* LOGO */
+    /* LOGO REPARAT (FIX) */
     .brand {
         height: 80px; display: flex; align-items: center; padding: 0 14px;
         border-bottom: 1px solid transparent; transition: 0.3s; cursor: pointer; position: relative;
     }
     .sidebar.open .brand { border-color: var(--outline); }
+    
     .logo {
-        width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s; border-radius: 50%;
+        width: 50px; 
+        height: 50px; 
+        min-width: 50px; /* Fortam latimea minima */
+        flex-shrink: 0; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: transform 0.2s; 
+        border-radius: 50%;
+        overflow: hidden; /* Ascundem orice iese din cerc */
+        background: rgba(255,255,255,0.05); /* Fundal discret daca nu se incarca poza */
     }
+    .logo img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: contain; 
+        max-width: 50px; /* Limita de siguranta */
+        max-height: 50px;
+    }
+    
     .brand:hover .logo { transform: scale(1.1); }
+    
     .brand::after {
         content: "Deschide Meniu ▶"; position: absolute; left: 75px; top: 50%; transform: translateY(-50%);
         background: var(--highlight); color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; 
@@ -71,21 +90,30 @@
     .header { margin-bottom: 25px; border-bottom: 1px solid var(--outline); padding-bottom: 15px; }
     .header h2 { margin: 0; font-size: 24px; }
 
-    /* STYLE GENERAL PAGINI */
+    /* GENERAL PAGE STYLES */
     .crime { margin-bottom:18px; padding:16px; border-radius:8px; background:linear-gradient(180deg,rgba(15, 23, 36, 0.9),rgba(11, 18, 32, 0.9)); border:1px solid rgba(255,255,255,0.02); animation: fadeIn 0.3s ease; }
     .crime h3 { margin:0 0 6px 0; color:#fff; }
     .crime p.desc { margin:0 0 8px 0; color:#cbd5e1; font-size:14px; line-height:1.5; }
+    .rank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+    .rank-btn { background: #1f2937; border: 1px solid var(--outline); color: white; padding: 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: .2s; }
     
+    @keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
+
     /* TOAST NOTIFICATION */
     #toast {
-        visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
-        border-radius: 8px; padding: 16px; position: fixed; z-index: 999; left: 50%; bottom: 30px;
-        transform: translateX(-50%); font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        visibility: hidden; min-width: 300px; 
+        background-color: #1e293b; color: #fff; text-align: center;
+        border-radius: 8px; padding: 20px; position: fixed; z-index: 999; 
+        left: 50%; bottom: 30px; transform: translateX(-50%); 
+        font-size: 15px; font-weight: 600;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s;
     }
-    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
-    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    /* Culori Notificari */
+    #toast.success { border-left: 5px solid #10b981; background: rgba(6, 78, 59, 0.95); color: #ecfdf5; }
+    #toast.warning { border-left: 5px solid #ef4444; background: rgba(127, 29, 29, 0.95); color: #fef2f2; }
+    #toast.show { visibility: visible; bottom: 50px; opacity: 1; }
 
     @media (max-width: 768px) {
         .sidebar { position: absolute; height: 100%; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
@@ -233,11 +261,23 @@
     function toggleSidebar() { sidebar.classList.toggle('open'); }
     function closeSidebarIfMobile() { if(window.innerWidth < 768) sidebar.classList.remove('open'); }
 
-    // --- TOAST FUNCTION ---
-    function showToast(message) {
+    // --- TOAST FUNCTION (MODIFICATA PENTRU CULORI) ---
+    function showToast(message, type = "normal") {
         toast.innerText = message;
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 5000);
+        // Resetam clasele
+        toast.className = "";
+        
+        // Adaugam tipul (success/warning)
+        if(type === "success") toast.classList.add("success");
+        if(type === "warning") toast.classList.add("warning");
+        
+        // Afisam
+        void toast.offsetWidth; // Trigger reflow
+        toast.classList.add("show");
+        
+        setTimeout(() => { 
+            toast.classList.remove("show"); 
+        }, 5000); // 5 secunde
     }
 
     // --- NAVIGATION ---
@@ -306,7 +346,7 @@
 
     function resetActiveButtons() { document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active-category')); }
 
-    // --- LOGICA PONTAJ (SALVARE LOCALA) ---
+    // --- LOGICA PONTAJ (CU NOTIFICARI PERSONALIZATE) ---
     function initPontajLogic() {
         renderHistory();
         checkActiveSession();
@@ -316,37 +356,32 @@
         const now = new Date();
         const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
         
-        // 1. Salvam starea
         localStorage.setItem('vpd_status', 'active');
         localStorage.setItem('vpd_startTime', now.getTime());
         localStorage.setItem('vpd_startStr', timeString);
 
-        // 2. Clipboard
         const copyText = `Clock-IN: ${timeString} / Clock-OUT:`;
         navigator.clipboard.writeText(copyText);
 
-        // 3. UI Updates
-        showToast("Ti-ai pornit pontajul, nu uita sa il copiezi pe camera de discord");
+        // AICI E MESAJUL DE START CERUT
+        showToast("Ti-ai pornit pontajul, nu uita sa il copiezi pe camera de discord", "success");
         checkActiveSession();
     }
 
     function handleClockOut() {
         const startTimestamp = localStorage.getItem('vpd_startTime');
-        if(!startTimestamp) return; // Error guard
+        if(!startTimestamp) return;
 
         const now = new Date();
         const endString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
         const startString = localStorage.getItem('vpd_startStr');
 
-        // Calcul durata
         const diffMs = now.getTime() - parseInt(startTimestamp);
         const diffMins = Math.round(diffMs / 60000);
 
-        // 1. Clipboard
         const copyText = `Clock-IN: ${startString} / Clock-OUT: ${endString} (${diffMins} min)`;
         navigator.clipboard.writeText(copyText);
 
-        // 2. Salvare in istoric
         const historyItem = {
             date: new Date().toLocaleDateString('ro-RO'),
             start: startString,
@@ -355,16 +390,15 @@
         };
         
         let history = JSON.parse(localStorage.getItem('vpd_history') || '[]');
-        history.unshift(historyItem); // Adauga la inceput
+        history.unshift(historyItem); 
         localStorage.setItem('vpd_history', JSON.stringify(history));
 
-        // 3. Resetare stare
         localStorage.removeItem('vpd_status');
         localStorage.removeItem('vpd_startTime');
         localStorage.removeItem('vpd_startStr');
 
-        // 4. UI Updates
-        showToast("Ai oprit pontajul nu uita sa modifici mesajul de pe discord");
+        // AICI E MESAJUL DE STOP CERUT
+        showToast("Ai oprit pontajul nu uita sa modifici mesajul de pe discord", "warning");
         checkActiveSession();
         renderHistory();
     }
@@ -377,29 +411,12 @@
         const timeDisplay = document.getElementById('startTimeDisplay');
 
         if(status === 'active') {
-            // E in tura
-            if(btnIn) {
-                btnIn.style.opacity = '0.5'; 
-                btnIn.style.pointerEvents = 'none';
-            }
-            if(btnOut) {
-                btnOut.style.opacity = '1'; 
-                btnOut.style.pointerEvents = 'auto';
-            }
-            if(statusDiv) {
-                statusDiv.style.display = 'block';
-                timeDisplay.innerText = localStorage.getItem('vpd_startStr');
-            }
+            if(btnIn) { btnIn.style.opacity = '0.5'; btnIn.style.pointerEvents = 'none'; }
+            if(btnOut) { btnOut.style.opacity = '1'; btnOut.style.pointerEvents = 'auto'; }
+            if(statusDiv) { statusDiv.style.display = 'block'; timeDisplay.innerText = localStorage.getItem('vpd_startStr'); }
         } else {
-            // Nu e in tura
-            if(btnIn) {
-                btnIn.style.opacity = '1'; 
-                btnIn.style.pointerEvents = 'auto';
-            }
-            if(btnOut) {
-                btnOut.style.opacity = '0.5'; 
-                btnOut.style.pointerEvents = 'none';
-            }
+            if(btnIn) { btnIn.style.opacity = '1'; btnIn.style.pointerEvents = 'auto'; }
+            if(btnOut) { btnOut.style.opacity = '0.5'; btnOut.style.pointerEvents = 'none'; }
             if(statusDiv) statusDiv.style.display = 'none';
         }
     }
@@ -435,7 +452,7 @@
     function copyOldLog(start, end, duration) {
         const text = `Clock-IN: ${start} / Clock-OUT: ${end} (${duration} min)`;
         navigator.clipboard.writeText(text);
-        showToast("Log copiat în clipboard!");
+        showToast("Log copiat în clipboard!", "normal");
     }
 
     function clearHistory() {
